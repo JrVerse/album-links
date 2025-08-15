@@ -14,7 +14,7 @@
     }
 
     * { box-sizing: border-box; }
-    html, body { height: 100%; margin:0; }
+    html, body { height: 100%; margin: 0; }
     body {
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
       background: radial-gradient(1200px 800px at 50% -10%, #1c1f26 0%, #0f0f12 50%, #0b0b0d 100%);
@@ -30,6 +30,7 @@
       text-align: center;
     }
 
+    /* Album cover with dynamic glow */
     .cover {
       width: min(340px, 78vw);
       aspect-ratio: 1/1;
@@ -39,13 +40,13 @@
       background: #1a1a1f;
       transition: box-shadow 0.3s ease;
     }
-
     .cover img {
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
 
+    /* Buttons */
     .btn {
       appearance: none;
       border: 0;
@@ -65,7 +66,6 @@
       text-decoration: none;
       transition: transform .05s ease, filter .2s ease, opacity .2s ease;
     }
-
     .btn:active { transform: translateY(1px) scale(.997); filter: brightness(.96); }
 
     /* Button colors */
@@ -83,37 +83,47 @@
 </head>
 <body>
   <div class="wrap">
-    <!-- Album Cover -->
+    <!-- Album cover image
+         CHANGE ME: swap the src to your album artwork file for each page -->
     <div class="cover" id="albumCover">
       <img id="albumImage" src="images/Sour.jpeg" alt="Album cover">
     </div>
 
-    <!-- Buttons -->
-    <!-- YouTube playlist in the YouTube app -->
+    <!-- MUSIC APP BUTTONS
+         Each button calls a function below.
+         CHANGE ME: replace the IDs inside onclick with your own for each album/page. -->
+
+    <!-- YouTube playlist
+         CHANGE ME: set playlistId or use videoId inside openYouTube -->
     <a class="btn youtube" href="#"
        onclick="return openYouTube({ playlistId: 'PLxA687tYuMWjb37RGWhECR5Mnz4LoFGQe' });">
       <img src="images/youtube-logo.png" alt="YouTube"> YouTube
     </a>
 
-    <!-- Spotify album -->
+    <!-- Spotify album
+         CHANGE ME: set type to 'album' | 'track' | 'playlist' and set id -->
     <a class="btn spotify" href="#"
        onclick="return openSpotify({ type: 'album', id: '6s84u2TUpR3wdUv4NgKA2j' });">
       <img src="images/spotify-logo.png" alt="Spotify"> Spotify
     </a>
 
-    <!-- Apple Music album -->
+    <!-- Apple Music album
+         CHANGE ME: replace id with your Apple Music album numeric ID
+         Note: iOS only - opens Music app directly. No web fallback to avoid double open. -->
     <a class="btn apple" href="#"
-       onclick="return openAppleMusic({ webUrl: 'https://music.apple.com/us/album/1560735414' });">
+       onclick="return openAppleMusic({ id: '1560735414' });">
       <img src="images/apple-logo.png" alt="Apple Music"> Apple Music
     </a>
 
-    <!-- Amazon Music album -->
+    <!-- Amazon Music album
+         CHANGE ME: replace id with your Amazon album ID -->
     <a class="btn amazon" href="#"
        onclick="return openAmazonMusic({ id: 'YOUR_AMAZON_ALBUM_ID' });">
       <img src="images/amazon-logo.png" alt="Amazon Music"> Amazon Music
     </a>
 
-    <!-- YouTube Music playlist -->
+    <!-- YouTube Music playlist
+         CHANGE ME: replace playlistId or use videoId -->
     <a class="btn ytmusic" href="#"
        onclick="return openYouTubeMusic({ playlistId: 'OLAK5uy_kEXvla-TA6hgdjALrM04oRCD0xay4xc54' });">
       <img src="images/ytmusic-logo.png" alt="YouTube Music"> YouTube Music
@@ -121,58 +131,67 @@
   </div>
 
   <script>
-    // Album cover glow
+    /* ========= Visual: album cover glow from average color ========= */
     const img = document.getElementById('albumImage');
     img.onload = function() {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
-      canvas.width = img.width;
-      canvas.height = img.height;
-      ctx.drawImage(img, 0, 0, img.width, img.height);
-      const data = ctx.getImageData(0,0,img.width,img.height).data;
-      let r=0,g=0,b=0; const len = data.length/4;
-      for(let i=0;i<data.length;i+=4){ r+=data[i]; g+=data[i+1]; b+=data[i+2]; }
-      r=Math.floor(r/len); g=Math.floor(g/len); b=Math.floor(b/len);
-      const glowColor = `rgba(${r},${g},${b},0.9)`;
-      document.getElementById('albumCover').style.boxShadow = `0 0 80px ${glowColor}`;
+      canvas.width = img.naturalWidth || img.width;
+      canvas.height = img.naturalHeight || img.height;
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+      let r = 0, g = 0, b = 0;
+      const len = data.length / 4;
+      for (let i = 0; i < data.length; i += 4) {
+        r += data[i]; g += data[i + 1]; b += data[i + 2];
+      }
+      r = Math.floor(r / len); g = Math.floor(g / len); b = Math.floor(b / len);
+      const glow = `rgba(${r},${g},${b},0.9)`;
+      document.getElementById('albumCover').style.boxShadow = `0 0 80px ${glow}`;
     };
 
-    // Platform detect
+    /* ========= Platform detection ========= */
     const UA = navigator.userAgent || '';
     const isAndroid = /Android/i.test(UA);
     const isIOS = /iPhone|iPad|iPod/i.test(UA);
 
-    // Generic opener: top-level navigation only, with timed fallback
+    /* ========= Generic opener with optional fallback (no popups) =========
+       Use top-level navigation so browsers do not block it. */
     function openWithFallback(appUrl, webUrl) {
       const start = Date.now();
 
-      // Android - if we got an intent, let the OS handle it
+      // Android intent with optional browser fallback
       if (isAndroid && appUrl.startsWith('intent://')) {
         window.location.href = appUrl;
         return false;
       }
 
       if (isIOS) {
-        // iOS - use top-level navigation to the app scheme
         window.location.href = appUrl;
-        // If we are still here quickly, app did not open - go to web
-        setTimeout(function(){
-          if (Date.now() - start < 1800) {
-            window.location.href = webUrl;
-          }
-        }, 1200);
+        // If the app did not open quickly, go to web fallback if provided
+        if (webUrl) {
+          setTimeout(function () {
+            if (Date.now() - start < 1800) {
+              window.location.href = webUrl;
+            }
+          }, 1200);
+        }
         return false;
       }
 
       // Desktop or unknown
-      window.location.href = webUrl;
+      if (webUrl) window.location.href = webUrl;
       return false;
     }
 
-    // Small helper
+    // Helper to navigate
     function go(url) { window.location.href = url; return false; }
 
-    // --- YouTube (regular app) ---
+    /* ========= Per-app openers =========
+       Each function has a CHANGE ME comment showing where to place IDs. */
+
+    // YouTube - pass either videoId or playlistId
+    // CHANGE ME: provide your YouTube videoId or playlistId
     function openYouTube({ videoId, playlistId }) {
       const webUrl = videoId
         ? `https://www.youtube.com/watch?v=${encodeURIComponent(videoId)}`
@@ -195,24 +214,23 @@
       return go(webUrl);
     }
 
-    // --- YouTube Music ---
+    // YouTube Music - pass videoId or playlistId
+    // CHANGE ME: provide your YT Music videoId or playlistId
     function openYouTubeMusic({ videoId, playlistId }) {
       const webUrl = videoId
         ? `https://music.youtube.com/watch?v=${encodeURIComponent(videoId)}`
         : `https://music.youtube.com/playlist?list=${encodeURIComponent(playlistId)}`;
 
       if (isAndroid) {
-        const path = videoId
-          ? `watch?v=${encodeURIComponent(videoId)}`
-          : `playlist?list=${encodeURIComponent(playlistId)}`;
+        const path = videoId ? `watch?v=${encodeURIComponent(videoId)}` :
+                               `playlist?list=${encodeURIComponent(playlistId)}`;
         const intent = `intent://music.youtube.com/${path}#Intent;scheme=https;package=com.google.android.apps.youtube.music;S.browser_fallback_url=${encodeURIComponent(webUrl)};end`;
         return go(intent);
       }
 
       if (isIOS) {
-        const path = videoId
-          ? `watch?v=${encodeURIComponent(videoId)}`
-          : `playlist?list=${encodeURIComponent(playlistId)}`;
+        const path = videoId ? `watch?v=${encodeURIComponent(videoId)}` :
+                               `playlist?list=${encodeURIComponent(playlistId)}`;
         const scheme = `youtubemusic://${path}`;
         return openWithFallback(scheme, webUrl);
       }
@@ -220,7 +238,8 @@
       return go(webUrl);
     }
 
-    // --- Spotify ---
+    // Spotify - pass type and id
+    // CHANGE ME: type = 'album' | 'playlist' | 'track' and id = your Spotify ID
     function openSpotify({ type, id }) {
       const webUrl = `https://open.spotify.com/${type}/${encodeURIComponent(id)}`;
 
@@ -237,25 +256,24 @@
       return go(webUrl);
     }
 
-    // --- Apple Music ---
-    function openAppleMusic({ webUrl }) {
-      const fallback = webUrl || 'https://music.apple.com/';
-
+    // Apple Music - pass numeric album id
+    // CHANGE ME: id = your Apple Music album numeric ID
+    // iOS: open Music app directly using scheme. No web fallback to avoid double open.
+    // Android: try Apple Music app via package intent without browser fallback.
+    function openAppleMusic({ id }) {
+      if (isIOS) {
+        window.location.href = `music://album/${encodeURIComponent(id)}`;
+        return false;
+      }
       if (isAndroid) {
-        const intent = `intent://music.apple.com/#Intent;scheme=https;package=com.apple.android.music;S.browser_fallback_url=${encodeURIComponent(fallback)};end`;
+        const intent = `intent://music.apple.com/album/${encodeURIComponent(id)}#Intent;scheme=https;package=com.apple.android.music;end`;
         return go(intent);
       }
-
-      if (isIOS) {
-        // Universal Links from https can work, but in many in-app browsers they do not
-        // Use scheme first, then fall back to the website
-        return openWithFallback('music://', fallback);
-      }
-
-      return go(fallback);
+      return false;
     }
 
-    // --- Amazon Music ---
+    // Amazon Music - pass album id
+    // CHANGE ME: id = your Amazon Music album ID
     function openAmazonMusic({ id }) {
       const webUrl = `https://music.amazon.com/albums/${encodeURIComponent(id)}`;
 
@@ -274,4 +292,3 @@
   </script>
 </body>
 </html>
-
