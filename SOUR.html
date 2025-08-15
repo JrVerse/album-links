@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Album Link</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      background-color: #111;
+      color: #fff;
+      text-align: center;
+    }
+    img { 
+      width: 250px; 
+      margin-bottom: 20px;
+      border-radius: 8px;
+    }
+    .button {
+      display: block;
+      width: 200px;
+      padding: 12px;
+      margin: 8px 0;
+      text-decoration: none;
+      color: #fff;
+      font-weight: bold;
+      border-radius: 6px;
+    }
+    .spotify { background: #1DB954; }
+    .apple { background: #000; }
+    .amazon { background: #FF9900; color: #000; }
+    .youtube { background: #FF0000; }
+  </style>
+  <script>
+    // Replace these URLs with your album links
+    const links = {
+      spotify: "spotify://album/YOUR_SPOTIFY_ALBUM_ID",
+      apple: "https://music.apple.com/album/YOUR_APPLE_ALBUM_ID",
+      amazon: "https://music.amazon.com/albums/YOUR_AMAZON_ALBUM_ID",
+      youtube: "https://www.youtube.com/playlist?list=YOUR_YOUTUBE_ALBUM_ID"
+    };
+
+    function tryRedirect(urls, index = 0) {
+      if(index >= urls.length) return; // stop if all failed
+
+      const timeout = setTimeout(() => {
+        // failed to open app, try next
+        tryRedirect(urls, index + 1);
+      }, 1500); // 1.5 seconds to detect failure
+
+      window.location = urls[index]; // try to open current app
+
+      // Optional: clear timeout if the user actually switched apps
+      window.onblur = () => clearTimeout(timeout);
+    }
+
+    window.onload = () => {
+      tryRedirect([links.spotify, links.apple, links.amazon, links.youtube]);
+    };
+  </script>
+</head>
+<body>
+  <img src="ALBUM_COVER_URL" alt="Album Cover">
+  <h2>Loading your album...</h2>
+  <p>If your music app didn’t open automatically, tap one of these:</p>
+  <a class="button spotify" href="https://open.spotify.com/album/YOUR_SPOTIFY_ALBUM_ID">Spotify</a>
+  <a class="button apple" href="https://music.apple.com/album/YOUR_APPLE_ALBUM_ID">Apple Music</a>
+  <a class="button amazon" href="https://music.amazon.com/albums/YOUR_AMAZON_ALBUM_ID">Amazon Music</a>
+  <a class="button youtube" href="https://www.youtube.com/playlist?list=YOUR_YOUTUBE_ALBUM_ID">YouTube</a>
+</body>
+</html>
