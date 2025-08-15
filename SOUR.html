@@ -88,12 +88,12 @@
       <img id="albumImage" src="images/Sour.jpeg" alt="Album cover">
     </div>
 
-    <!-- Buttons -->
-    <a class="btn youtube" href="#" onclick="openAppFallback('youtube://www.youtube.com/playlist?list=OLAK5uy_mRc9HLtU_4lp_-MKQNApIRiLwY0M6xoCA&si=lTlael00CYmCX41d','https://youtube.com/playlist?list=OLAK5uy_mRc9HLtU_4lp_-MKQNApIRiLwY0M6xoCA&si=lTlael00CYmCX41d')">
+    <!-- Buttons with deep link + fallback -->
+    <a class="btn youtube" href="#" onclick="openAppFallback('youtube://www.youtube.com/playlist?list=PLxA687tYuMWjb37RGWhECR5Mnz4LoFGQe','https://youtube.com/playlist?list=PLxA687tYuMWjb37RGWhECR5Mnz4LoFGQe')">
       <img src="images/youtube-logo.png" alt="YouTube"> YouTube
     </a>
 
-    <a class="btn spotify" href="#" onclick="openAppFallback('https://open.spotify.com/album/6s84u2TUpR3wdUv4NgKA2j','https://open.spotify.com/album/6s84u2TUpR3wdUv4NgKA2j')">
+    <a class="btn spotify" href="#" onclick="openAppFallback('spotify://album/6s84u2TUpR3wdUv4NgKA2j','https://open.spotify.com/album/6s84u2TUpR3wdUv4NgKA2j')">
       <img src="images/spotify-logo.png" alt="Spotify"> Spotify
     </a>
 
@@ -101,12 +101,11 @@
       <img src="images/apple-logo.png" alt="Apple Music"> Apple Music
     </a>
 
-    <a class="btn amazon" href="#" onclick="openAppFallback('https://music.amazon.com/albums/YOUR_AMAZON_ALBUM_ID','https://music.amazon.com/albums/YOUR_AMAZON_ALBUM_ID')">
+    <a class="btn amazon" href="#" onclick="openAppFallback('amazonmusic://albums/YOUR_AMAZON_ALBUM_ID','https://music.amazon.com/albums/YOUR_AMAZON_ALBUM_ID')">
       <img src="images/amazon-logo.png" alt="Amazon Music"> Amazon Music
     </a>
 
-    <a class="btn ytmusic" href=https://music.youtube.com/playlist?list=OLAK5uy_kEXvla-TA6hgdjALrM04oRCD0xay4xc54&si=z39XuyyrqelTn5YF" 
-       onclick="setTimeout(function(){ window.location='https://music.youtube.com/playlist?list=OLAK5uy_kEXvla-TA6hgdjALrM04oRCD0xay4xc54'; }, 500);">
+    <a class="btn ytmusic" href="#" onclick="openAppFallback('youtube-music://playlist?list=OLAK5uy_kEXvla-TA6hgdjALrM04oRCD0xay4xc54','https://music.youtube.com/playlist?list=OLAK5uy_kEXvla-TA6hgdjALrM04oRCD0xay4xc54')">
       <img src="images/ytmusic-logo.png" alt="YouTube Music"> YouTube Music
     </a>
   </div>
@@ -128,7 +127,7 @@
       document.getElementById('albumCover').style.boxShadow = `0 0 60px ${glowColor}`;
     }
 
-    // Generic fallback for apps
+    // Generic deep link with fallback
     function openAppFallback(appUrl, webUrl){
       const now = Date.now();
       window.location = appUrl;
@@ -136,7 +135,7 @@
         if(Date.now() - now < 1200){
           window.location = webUrl;
         }
-      }, 500);
+      }, 700);
     }
   </script>
 </body>
