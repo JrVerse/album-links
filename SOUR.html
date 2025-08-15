@@ -65,17 +65,17 @@
       justify-content: center;
       gap: 10px;
       text-decoration: none;
-      transition: transform .05s ease, filter .2s ease, opacity .2s ease, box-shadow 0.3s ease;
+      transition: transform .05s ease, filter .2s ease, opacity .2s ease;
     }
 
     .btn:active { transform: translateY(1px) scale(.997); filter: brightness(.96); }
 
-    /* Button colors + glow */
-    .spotify { background: #1DB954; color: #fff; box-shadow: 0 0 15px rgba(29, 185, 84, 0.6); }
-    .apple { background: #ffffff; color: #000; box-shadow: 0 0 15px rgba(255, 255, 255, 0.6); }
-    .amazon { background: #00FFFF; color: #000; box-shadow: 0 0 15px rgba(0, 255, 255, 0.6); }
-    .ytmusic { background: #FF0000; color: #fff; box-shadow: 0 0 15px rgba(255, 0, 0, 0.6); }
-    .youtube { background: #FF0000; color: #fff; box-shadow: 0 0 15px rgba(255, 0, 0, 0.6); }
+    /* Button colors (no glow now) */
+    .spotify { background: #1DB954; color: #fff; }
+    .apple { background: #ffffff; color: #000; }
+    .amazon { background: #00FFFF; color: #000; }
+    .ytmusic { background: #FF0000; color: #fff; }
+    .youtube { background: #FF0000; color: #fff; }
   </style>
 </head>
 <body>
@@ -94,7 +94,7 @@
   </div>
 
   <script>
-    // Detect main color of album cover and add glow
+    // Detect main color of album cover and add stronger glow
     const img = document.getElementById('albumImage');
     img.onload = function() {
       const canvas = document.createElement('canvas');
@@ -116,10 +116,9 @@
       g = Math.floor(g / length);
       b = Math.floor(b / length);
 
-      const glowColor = `rgba(${r},${g},${b},0.6)`;
-      document.getElementById('albumCover').style.boxShadow = `0 0 40px ${glowColor}`;
+      const glowColor = `rgba(${r},${g},${b},0.8)`; // stronger glow
+      document.getElementById('albumCover').style.boxShadow = `0 0 60px ${glowColor}`;
     }
   </script>
 </body>
 </html>
-
