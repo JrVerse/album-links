@@ -69,11 +69,11 @@
     .btn:active { transform: translateY(1px) scale(.997); filter: brightness(.96); }
 
     /* Button colors */
+    .youtube { background: #CC0000; color: #fff; }
     .spotify { background: #1DB954; color: #fff; }
     .apple { background: #ffffff; color: #000; }
     .amazon { background: #00FFFF; color: #000; }
     .ytmusic { background: #CC0000; color: #fff; }
-    .youtube { background: #CC0000; color: #fff; }
 
     /* Logos */
     .btn img { height: 24px; width: auto; }
@@ -87,24 +87,39 @@
       <img id="albumImage" src="images/Sour.jpeg" alt="Album cover">
     </div>
 
-    <!-- Buttons -->
-    <a class="btn youtube" href="#" onclick="openAppFallback('youtube://www.youtube.com/playlist?list=PLxA687tYuMWjb37RGWhECR5Mnz4LoFGQe','youtube://www.youtube.com/playlist?list=PLxA687tYuMWjb37RGWhECR5Mnz4LoFGQe')">
+    <!-- Buttons in order: YouTube, Spotify, Apple, Amazon, YouTube Music -->
+    <a class="btn youtube" href="#" onclick="openAppFallback(
+      'https://www.youtube.com/playlist?list=PLxA687tYuMWjb37RGWhECR5Mnz4LoFGQe',
+      'https://www.youtube.com/playlist?list=PLxA687tYuMWjb37RGWhECR5Mnz4LoFGQe'
+    )">
       <img src="images/youtube-logo.png" alt="YouTube"> YouTube
     </a>
 
-    <a class="btn spotify" href="#" onclick="openAppFallback('https://open.spotify.com/album/6s84u2TUpR3wdUv4NgKA2j','https://open.spotify.com/album/6s84u2TUpR3wdUv4NgKA2j')">
+    <a class="btn spotify" href="#" onclick="openAppFallback(
+      'spotify:album:6s84u2TUpR3wdUv4NgKA2j',
+      'https://open.spotify.com/album/6s84u2TUpR3wdUv4NgKA2j'
+    )">
       <img src="images/spotify-logo.png" alt="Spotify"> Spotify
     </a>
 
-    <a class="btn apple" href="#" onclick="openAppFallback('https://music.apple.com/us/album/sour/1560735414','https://music.apple.com/us/album/sour/1560735414')">
+    <a class="btn apple" href="#" onclick="openAppFallback(
+      'music://album/1560735414',
+      'https://music.apple.com/us/album/sour/1560735414'
+    )">
       <img src="images/apple-logo.png" alt="Apple Music"> Apple Music
     </a>
 
-    <a class="btn amazon" href="#" onclick="openAppFallback('https://music.amazon.com/albums/YOUR_AMAZON_ALBUM_ID','https://music.amazon.com/albums/YOUR_AMAZON_ALBUM_ID')">
+    <a class="btn amazon" href="#" onclick="openAppFallback(
+      'https://music.amazon.com/albums/YOUR_AMAZON_ALBUM_ID',
+      'https://music.amazon.com/albums/YOUR_AMAZON_ALBUM_ID'
+    )">
       <img src="images/amazon-logo.png" alt="Amazon Music"> Amazon Music
     </a>
 
-    <a class="btn ytmusic" href="#" onclick="openAppFallback('https://music.youtube.com/playlist?list=OLAK5uy_kEXvla-TA6hgdjALrM04oRCD0xay4xc54','https://music.youtube.com/playlist?list=OLAK5uy_kEXvla-TA6hgdjALrM04oRCD0xay4xc54')">
+    <a class="btn ytmusic" href="#" onclick="openAppFallback(
+      'https://music.youtube.com/playlist?list=OLAK5uy_kEXvla-TA6hgdjALrM04oRCD0xay4xc54',
+      'https://music.youtube.com/playlist?list=OLAK5uy_kEXvla-TA6hgdjALrM04oRCD0xay4xc54'
+    )">
       <img src="images/ytmusic-logo.png" alt="YouTube Music"> YouTube Music
     </a>
   </div>
