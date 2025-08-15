@@ -14,7 +14,7 @@
     }
 
     * { box-sizing: border-box; }
-    html, body { height: 100%; margin:0; }
+    html, body { height: 100%; margin: 0; }
     body {
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
       background: radial-gradient(1200px 800px at 50% -10%, #1c1f26 0%, #0f0f12 50%, #0b0b0d 100%);
@@ -41,6 +41,7 @@
     }
 
     .cover img {
+      display: block;
       width: 100%;
       height: 100%;
       object-fit: cover;
@@ -76,40 +77,36 @@
     .ytmusic { background: #CC0000; color: #fff; }
 
     /* Logos */
-    .btn img { height: 26px; width: auto; }
-    .btn.youtube img { width: 36px; }  /* slightly longer */
-    .btn.amazon img { width: 38px; }   /* slightly longer */
+    .btn img { height: 28px; width: auto; }
+    .btn.youtube img { width: 36px; }  /* slightly rectangular */
+    .btn.amazon img { width: 38px; }   /* slightly rectangular */
   </style>
 </head>
 <body>
   <div class="wrap">
+    <!-- Album Cover -->
     <div class="cover" id="albumCover">
       <img id="albumImage" src="images/Sour.jpeg" alt="Album cover">
     </div>
 
     <!-- Buttons -->
-    <a class="btn youtube" href="youtube://www.youtube.com/playlist?list=PLxA687tYuMWjb37RGWhECR5Mnz4LoFGQe"
-       onclick="setTimeout(function(){ window.location='https://youtube.com/playlist?list=PLxA687tYuMWjb37RGWhECR5Mnz4LoFGQe'; }, 500);">
+    <a class="btn youtube" href="#" onclick="openYouTube(event)">
       <img src="images/youtube-logo.png" alt="YouTube"> YouTube
     </a>
 
-    <a class="btn spotify" href="spotify://album/6s84u2TUpR3wdUv4NgKA2j"
-       onclick="setTimeout(function(){ window.location='https://open.spotify.com/album/6s84u2TUpR3wdUv4NgKA2j'; }, 500);">
+    <a class="btn spotify" href="#" onclick="openAppFallback('spotify://album/6s84u2TUpR3wdUv4NgKA2j','https://open.spotify.com/album/6s84u2TUpR3wdUv4NgKA2j')">
       <img src="images/spotify-logo.png" alt="Spotify"> Spotify
     </a>
 
-    <a class="btn apple" href="music://album/1560735414"
-       onclick="setTimeout(function(){ window.location='https://music.apple.com/us/album/sour/1560735414'; }, 500);">
+    <a class="btn apple" href="music://album/1560735414">
       <img src="images/apple-logo.png" alt="Apple Music"> Apple Music
     </a>
 
-    <a class="btn amazon" href="amzn-music://albums/YOUR_AMAZON_ALBUM_ID"
-       onclick="setTimeout(function(){ window.location='https://music.amazon.com/albums/YOUR_AMAZON_ALBUM_ID'; }, 500);">
+    <a class="btn amazon" href="#" onclick="openAppFallback('amznmusic://album/YOUR_AMAZON_ALBUM_ID','https://music.amazon.com/albums/YOUR_AMAZON_ALBUM_ID')">
       <img src="images/amazon-logo.png" alt="Amazon Music"> Amazon Music
     </a>
 
-    <a class="btn ytmusic" href="youtube-music://playlist?list=OLAK5uy_kEXvla-TA6hgdjALrM04oRCD0xay4xc54"
-       onclick="setTimeout(function(){ window.location='https://music.youtube.com/playlist?list=OLAK5uy_kEXvla-TA6hgdjALrM04oRCD0xay4xc54'; }, 500);">
+    <a class="btn ytmusic" href="#" onclick="openYouTubeMusic(event)">
       <img src="images/ytmusic-logo.png" alt="YouTube Music"> YouTube Music
     </a>
   </div>
@@ -129,6 +126,40 @@
       r=Math.floor(r/len); g=Math.floor(g/len); b=Math.floor(b/len);
       const glowColor = `rgba(${r},${g},${b},0.8)`;
       document.getElementById('albumCover').style.boxShadow = `0 0 60px ${glowColor}`;
+    }
+
+    // Generic app fallback for Spotify, Amazon, etc.
+    function openAppFallback(appUrl, webUrl){
+      const now = Date.now();
+      window.location = appUrl;
+      setTimeout(()=>{
+        if(Date.now() - now < 1200){
+          window.location = webUrl;
+        }
+      }, 800);
+    }
+
+    // YouTube (video/playlist) button
+    function openYouTube(e){
+      e.preventDefault();
+      const appUrl = 'youtube://www.youtube.com/playlist?list=PLxA687tYuMWjb37RGWhECR5Mnz4LoFGQe';
+      const webUrl = 'https://youtube.com/playlist?list=PLxA687tYuMWjb37RGWhECR5Mnz4LoFGQe';
+      window.location = appUrl;
+      setTimeout(()=>{ window.location = webUrl; }, 500);
+    }
+
+    // YouTube Music button (iOS + Android intent)
+    function openYouTubeMusic(e){
+      e.preventDefault();
+      const url = 'https://music.youtube.com/playlist?list=OLAK5uy_kEXvla-TA6hgdjALrM04oRCD0xay4xc54';
+      const intentUrl = 'intent://music.youtube.com/playlist?list=OLAK5uy_kEXvla-TA6hgdjALrM04oRCD0xay4xc54#Intent;package=com.google.android.apps.youtube.music;scheme=https;end';
+      
+      if(/Android/i.test(navigator.userAgent)){
+        window.location = intentUrl;
+        setTimeout(()=>{ window.location = url; }, 1000);
+      } else {
+        window.location = url;
+      }
     }
   </script>
 </body>
