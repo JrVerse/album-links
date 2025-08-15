@@ -72,10 +72,16 @@
     .spotify { background: #1DB954; color: #fff; }
     .apple { background: #ffffff; color: #000; }
     .amazon { background: #00FFFF; color: #000; }
-    .ytmusic { background: #FF0000; color: #fff; }
-    .youtube { background: #FF0000; color: #fff; }
+    .ytmusic { background: #CC0000; color: #fff; }  /* darker red */
+    .youtube { background: #CC0000; color: #fff; }  /* darker red */
 
-    .btn img { height: 20px; width: 20px; }
+    .btn img {
+      height: 24px; /* slightly bigger */
+      width: auto; /* keep aspect ratio */
+    }
+
+    .btn.youtube img { width: 28px; }  /* slightly wider for YouTube logo */
+    .btn.amazon img { width: 30px; }   /* slightly wider for Amazon logo */
   </style>
 </head>
 <body>
@@ -84,7 +90,7 @@
       <img id="albumImage" src="images/Sour.jpeg" alt="Album cover">
     </div>
 
-    <!-- Buttons in desired order with logos -->
+    <!-- Buttons -->
     <a class="btn youtube" href="#" onclick="openAppFallback('youtube://www.youtube.com/playlist?list=PLxA687tYuMWjb37RGWhECR5Mnz4LoFGQe', 'https://youtube.com/playlist?list=PLxA687tYuMWjb37RGWhECR5Mnz4LoFGQe')">
       <img src="images/youtube-logo.png" alt="YouTube"> YouTube
     </a>
@@ -136,3 +142,4 @@
   </script>
 </body>
 </html>
+
