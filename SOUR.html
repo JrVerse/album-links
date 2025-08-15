@@ -32,7 +32,7 @@
 
     .cover {
       width: min(340px, 78vw);
-      aspect-ratio: 1/1;
+      aspect-ratio: 1 / 1;
       margin: 28px auto 22px;
       border-radius: 12px;
       overflow: hidden;
@@ -76,9 +76,9 @@
     .ytmusic { background: #CC0000; color: #fff; }
 
     /* Logos */
-    .btn img { height: 24px; width: auto; }
-    .btn.youtube img { width: 34px; }  /* slightly longer rectangle */
-    .btn.amazon img { width: 36px; }   /* slightly longer rectangle */
+    .btn img { height: 26px; width: auto; }
+    .btn.youtube img { width: 36px; }  /* slightly longer */
+    .btn.amazon img { width: 38px; }   /* slightly longer */
   </style>
 </head>
 <body>
@@ -87,45 +87,35 @@
       <img id="albumImage" src="images/Sour.jpeg" alt="Album cover">
     </div>
 
-    <!-- Buttons in order: YouTube, Spotify, Apple, Amazon, YouTube Music -->
-    <a class="btn youtube" href="#" onclick="openAppFallback(
-      'https://www.youtube.com/playlist?list=PLxA687tYuMWjb37RGWhECR5Mnz4LoFGQe',
-      'https://www.youtube.com/playlist?list=PLxA687tYuMWjb37RGWhECR5Mnz4LoFGQe'
-    )">
+    <!-- Buttons -->
+    <a class="btn youtube" href="youtube://www.youtube.com/playlist?list=PLxA687tYuMWjb37RGWhECR5Mnz4LoFGQe"
+       onclick="setTimeout(function(){ window.location='https://youtube.com/playlist?list=PLxA687tYuMWjb37RGWhECR5Mnz4LoFGQe'; }, 500);">
       <img src="images/youtube-logo.png" alt="YouTube"> YouTube
     </a>
 
-    <a class="btn spotify" href="#" onclick="openAppFallback(
-      'spotify:album:6s84u2TUpR3wdUv4NgKA2j',
-      'https://open.spotify.com/album/6s84u2TUpR3wdUv4NgKA2j'
-    )">
+    <a class="btn spotify" href="spotify://album/6s84u2TUpR3wdUv4NgKA2j"
+       onclick="setTimeout(function(){ window.location='https://open.spotify.com/album/6s84u2TUpR3wdUv4NgKA2j'; }, 500);">
       <img src="images/spotify-logo.png" alt="Spotify"> Spotify
     </a>
 
-    <a class="btn apple" href="#" onclick="openAppFallback(
-      'music://album/1560735414',
-      'https://music.apple.com/us/album/sour/1560735414'
-    )">
+    <a class="btn apple" href="music://album/1560735414"
+       onclick="setTimeout(function(){ window.location='https://music.apple.com/us/album/sour/1560735414'; }, 500);">
       <img src="images/apple-logo.png" alt="Apple Music"> Apple Music
     </a>
 
-    <a class="btn amazon" href="#" onclick="openAppFallback(
-      'https://music.amazon.com/albums/YOUR_AMAZON_ALBUM_ID',
-      'https://music.amazon.com/albums/YOUR_AMAZON_ALBUM_ID'
-    )">
+    <a class="btn amazon" href="amzn-music://albums/YOUR_AMAZON_ALBUM_ID"
+       onclick="setTimeout(function(){ window.location='https://music.amazon.com/albums/YOUR_AMAZON_ALBUM_ID'; }, 500);">
       <img src="images/amazon-logo.png" alt="Amazon Music"> Amazon Music
     </a>
 
-    <a class="btn ytmusic" href="#" onclick="openAppFallback(
-      'https://music.youtube.com/playlist?list=OLAK5uy_kEXvla-TA6hgdjALrM04oRCD0xay4xc54',
-      'https://music.youtube.com/playlist?list=OLAK5uy_kEXvla-TA6hgdjALrM04oRCD0xay4xc54'
-    )">
+    <a class="btn ytmusic" href="youtube-music://playlist?list=OLAK5uy_kEXvla-TA6hgdjALrM04oRCD0xay4xc54"
+       onclick="setTimeout(function(){ window.location='https://music.youtube.com/playlist?list=OLAK5uy_kEXvla-TA6hgdjALrM04oRCD0xay4xc54'; }, 500);">
       <img src="images/ytmusic-logo.png" alt="YouTube Music"> YouTube Music
     </a>
   </div>
 
   <script>
-    // Album cover glow
+    // Album cover glow based on main color
     const img = document.getElementById('albumImage');
     img.onload = function() {
       const canvas = document.createElement('canvas');
@@ -139,17 +129,6 @@
       r=Math.floor(r/len); g=Math.floor(g/len); b=Math.floor(b/len);
       const glowColor = `rgba(${r},${g},${b},0.8)`;
       document.getElementById('albumCover').style.boxShadow = `0 0 60px ${glowColor}`;
-    }
-
-    // Open app if installed, fallback to web
-    function openAppFallback(appUrl, webUrl){
-      const now = Date.now();
-      window.location = appUrl;
-      setTimeout(function(){
-        if(Date.now() - now < 1200){
-          window.location = webUrl;
-        }
-      }, 800);
     }
   </script>
 </body>
