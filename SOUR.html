@@ -72,16 +72,13 @@
     .spotify { background: #1DB954; color: #fff; }
     .apple { background: #ffffff; color: #000; }
     .amazon { background: #00FFFF; color: #000; }
-    .ytmusic { background: #CC0000; color: #fff; }  /* darker red */
-    .youtube { background: #CC0000; color: #fff; }  /* darker red */
+    .ytmusic { background: #CC0000; color: #fff; }
+    .youtube { background: #CC0000; color: #fff; }
 
-    .btn img {
-      height: 24px; /* slightly bigger */
-      width: auto; /* keep aspect ratio */
-    }
-
-    .btn.youtube img { width: 28px; }  /* slightly wider for YouTube logo */
-    .btn.amazon img { width: 30px; }   /* slightly wider for Amazon logo */
+    /* Logos */
+    .btn img { height: 24px; width: auto; }
+    .btn.youtube img { width: 34px; }  /* slightly longer rectangle */
+    .btn.amazon img { width: 36px; }   /* slightly longer rectangle */
   </style>
 </head>
 <body>
@@ -91,23 +88,23 @@
     </div>
 
     <!-- Buttons -->
-    <a class="btn youtube" href="#" onclick="openAppFallback('youtube://www.youtube.com/playlist?list=PLxA687tYuMWjb37RGWhECR5Mnz4LoFGQe', 'https://youtube.com/playlist?list=PLxA687tYuMWjb37RGWhECR5Mnz4LoFGQe')">
+    <a class="btn youtube" href="#" onclick="openAppFallback('youtube://www.youtube.com/playlist?list=PLxA687tYuMWjb37RGWhECR5Mnz4LoFGQe','https://youtube.com/playlist?list=PLxA687tYuMWjb37RGWhECR5Mnz4LoFGQe')">
       <img src="images/youtube-logo.png" alt="YouTube"> YouTube
     </a>
 
-    <a class="btn spotify" href="#" onclick="openAppFallback('spotify:album:6s84u2TUpR3wdUv4NgKA2j', 'https://open.spotify.com/album/6s84u2TUpR3wdUv4NgKA2j')">
+    <a class="btn spotify" href="#" onclick="openAppFallback('spotify:album:6s84u2TUpR3wdUv4NgKA2j','https://open.spotify.com/album/6s84u2TUpR3wdUv4NgKA2j')">
       <img src="images/spotify-logo.png" alt="Spotify"> Spotify
     </a>
 
-    <a class="btn apple" href="#" onclick="openAppFallback('music://album/1560735414', 'https://music.apple.com/us/album/sour/1560735414')">
+    <a class="btn apple" href="#" onclick="openAppFallback('music://album/1560735414','https://music.apple.com/us/album/sour/1560735414')">
       <img src="images/apple-logo.png" alt="Apple Music"> Apple Music
     </a>
 
-    <a class="btn amazon" href="#" onclick="openAppFallback('amazonmusic://albums/YOUR_AMAZON_ALBUM_ID', 'https://music.amazon.com/albums/YOUR_AMAZON_ALBUM_ID')">
+    <a class="btn amazon" href="#" onclick="openAppFallback('amazonmusic://albums/YOUR_AMAZON_ALBUM_ID','https://music.amazon.com/albums/YOUR_AMAZON_ALBUM_ID')">
       <img src="images/amazon-logo.png" alt="Amazon Music"> Amazon Music
     </a>
 
-    <a class="btn ytmusic" href="#" onclick="openAppFallback('music://playlist?list=OLAK5uy_kEXvla-TA6hgdjALrM04oRCD0xay4xc54', 'https://music.youtube.com/playlist?list=OLAK5uy_kEXvla-TA6hgdjALrM04oRCD0xay4xc54')">
+    <a class="btn ytmusic" href="#" onclick="openAppFallback('https://music.youtube.com/playlist?list=OLAK5uy_kEXvla-TA6hgdjALrM04oRCD0xay4xc54','https://music.youtube.com/playlist?list=OLAK5uy_kEXvla-TA6hgdjALrM04oRCD0xay4xc54')">
       <img src="images/ytmusic-logo.png" alt="YouTube Music"> YouTube Music
     </a>
   </div>
@@ -134,7 +131,7 @@
       const now = Date.now();
       window.location = appUrl;
       setTimeout(function(){
-        if(Date.now() - now < 1000){
+        if(Date.now() - now < 1200){
           window.location = webUrl;
         }
       }, 800);
@@ -142,4 +139,3 @@
   </script>
 </body>
 </html>
-
