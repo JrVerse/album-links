@@ -82,18 +82,26 @@
       <img id="albumImage" src="images/Sour.jpeg" alt="Album cover">
     </div>
 
-    <!-- Buttons -->
-    <a class="btn spotify" href="#" onclick="openAppFallback('spotify:album:6s84u2TUpR3wdUv4NgKA2j', 'https://open.spotify.com/album/6s84u2TUpR3wdUv4NgKA2j')">Spotify</a>
+   <!-- Buttons -->
+<a class="btn youtube" href="#" onclick="openAppFallback('youtube://www.youtube.com/playlist?list=PLxA687tYuMWjb37RGWhECR5Mnz4LoFGQe', 'https://youtube.com/playlist?list=PLxA687tYuMWjb37RGWhECR5Mnz4LoFGQe')">
+  <img src="images/youtube-logo.png" alt="YouTube" style="height:20px;width:20px;"> YouTube
+</a>
 
-    <a class="btn apple" href="#" onclick="openAppFallback('music://album/1560735414', 'https://music.apple.com/us/album/sour/1560735414')">Apple Music</a>
+<a class="btn spotify" href="#" onclick="openAppFallback('spotify:album:6s84u2TUpR3wdUv4NgKA2j', 'https://open.spotify.com/album/6s84u2TUpR3wdUv4NgKA2j')">
+  <img src="images/spotify-logo.png" alt="Spotify" style="height:20px;width:20px;"> Spotify
+</a>
 
-    <a class="btn amazon" href="#" onclick="openAppFallback('amazonmusic://albums/YOUR_AMAZON_ALBUM_ID', 'https://music.amazon.com/albums/YOUR_AMAZON_ALBUM_ID')">Amazon Music</a>
+<a class="btn apple" href="#" onclick="openAppFallback('music://album/1560735414', 'https://music.apple.com/us/album/sour/1560735414')">
+  <img src="images/apple-logo.png" alt="Apple Music" style="height:20px;width:20px;"> Apple Music
+</a>
 
-    <a class="btn ytmusic" href="#" onclick="openAppFallback('music://playlist?list=OLAK5uy_kEXvla-TA6hgdjALrM04oRCD0xay4xc54', 'https://music.youtube.com/playlist?list=OLAK5uy_kEXvla-TA6hgdjALrM04oRCD0xay4xc54')">YouTube Music</a>
+<a class="btn amazon" href="#" onclick="openAppFallback('amazonmusic://albums/YOUR_AMAZON_ALBUM_ID', 'https://music.amazon.com/albums/YOUR_AMAZON_ALBUM_ID')">
+  <img src="images/amazon-logo.png" alt="Amazon Music" style="height:20px;width:20px;"> Amazon Music
+</a>
 
-    <a class="btn youtube" href="#" onclick="openAppFallback('youtube://www.youtube.com/playlist?list=PLxA687tYuMWjb37RGWhECR5Mnz4LoFGQe', 'https://youtube.com/playlist?list=PLxA687tYuMWjb37RGWhECR5Mnz4LoFGQe')">YouTube</a>
-  </div>
-
+<a class="btn ytmusic" href="#" onclick="openAppFallback('music://playlist?list=OLAK5uy_kEXvla-TA6hgdjALrM04oRCD0xay4xc54', 'https://music.youtube.com/playlist?list=OLAK5uy_kEXvla-TA6hgdjALrM04oRCD0xay4xc54')">
+  <img src="images/ytmusic-logo.png" alt="YouTube Music" style="height:20px;width:20px;"> YouTube Music
+</a>
   <script>
     // Album cover glow
     const img = document.getElementById('albumImage');
