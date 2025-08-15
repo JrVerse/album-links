@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Album — Tap to Play</title>
+  <title>Album - Tap to Play</title>
 
   <style>
     :root {
@@ -89,28 +89,33 @@
     </div>
 
     <!-- Buttons -->
-    <!-- YouTube (video or playlist in the regular YouTube app) -->
-    <a class="btn youtube" href="#" onclick="return openYouTube({ playlistId: 'PLxA687tYuMWjb37RGWhECR5Mnz4LoFGQe' });">
+    <!-- YouTube playlist in the YouTube app -->
+    <a class="btn youtube" href="#"
+       onclick="return openYouTube({ playlistId: 'PLxA687tYuMWjb37RGWhECR5Mnz4LoFGQe' });">
       <img src="images/youtube-logo.png" alt="YouTube"> YouTube
     </a>
 
     <!-- Spotify album -->
-    <a class="btn spotify" href="#" onclick="return openSpotify({ type: 'album', id: '6s84u2TUpR3wdUv4NgKA2j' });">
+    <a class="btn spotify" href="#"
+       onclick="return openSpotify({ type: 'album', id: '6s84u2TUpR3wdUv4NgKA2j' });">
       <img src="images/spotify-logo.png" alt="Spotify"> Spotify
     </a>
 
     <!-- Apple Music album -->
-    <a class="btn apple" href="#" onclick="return openAppleMusic({ webUrl: 'https://music.apple.com/us/album/1560735414' });">
+    <a class="btn apple" href="#"
+       onclick="return openAppleMusic({ webUrl: 'https://music.apple.com/us/album/1560735414' });">
       <img src="images/apple-logo.png" alt="Apple Music"> Apple Music
     </a>
 
     <!-- Amazon Music album -->
-    <a class="btn amazon" href="#" onclick="return openAmazonMusic({ id: 'YOUR_AMAZON_ALBUM_ID' });">
+    <a class="btn amazon" href="#"
+       onclick="return openAmazonMusic({ id: 'YOUR_AMAZON_ALBUM_ID' });">
       <img src="images/amazon-logo.png" alt="Amazon Music"> Amazon Music
     </a>
 
     <!-- YouTube Music playlist -->
-    <a class="btn ytmusic" href="#" onclick="return openYouTubeMusic({ playlistId: 'OLAK5uy_kEXvla-TA6hgdjALrM04oRCD0xay4xc54' });">
+    <a class="btn ytmusic" href="#"
+       onclick="return openYouTubeMusic({ playlistId: 'OLAK5uy_kEXvla-TA6hgdjALrM04oRCD0xay4xc54' });">
       <img src="images/ytmusic-logo.png" alt="YouTube Music"> YouTube Music
     </a>
   </div>
@@ -137,27 +142,35 @@
     const isAndroid = /Android/i.test(UA);
     const isIOS = /iPhone|iPad|iPod/i.test(UA);
 
-    // Generic iOS scheme opener with fallback
-    function openIOSWithFallback(appScheme, webUrl) {
+    // Generic opener: top-level navigation only, with timed fallback
+    function openWithFallback(appUrl, webUrl) {
       const start = Date.now();
-      const iframe = document.createElement('iframe');
-      iframe.style.display = 'none';
-      iframe.src = appScheme;
-      document.body.appendChild(iframe);
-      setTimeout(() => {
-        // If the app opened, Safari will switch context and this rarely runs
-        if (Date.now() - start < 2000) {
-          window.location.href = webUrl;
-        }
-        document.body.removeChild(iframe);
-      }, 1200);
-    }
 
-    // Navigate helper to avoid default anchor navigation
-    function go(url) {
-      window.location.href = url;
+      // Android - if we got an intent, let the OS handle it
+      if (isAndroid && appUrl.startsWith('intent://')) {
+        window.location.href = appUrl;
+        return false;
+      }
+
+      if (isIOS) {
+        // iOS - use top-level navigation to the app scheme
+        window.location.href = appUrl;
+        // If we are still here quickly, app did not open - go to web
+        setTimeout(function(){
+          if (Date.now() - start < 1800) {
+            window.location.href = webUrl;
+          }
+        }, 1200);
+        return false;
+      }
+
+      // Desktop or unknown
+      window.location.href = webUrl;
       return false;
     }
+
+    // Small helper
+    function go(url) { window.location.href = url; return false; }
 
     // --- YouTube (regular app) ---
     function openYouTube({ videoId, playlistId }) {
@@ -173,13 +186,10 @@
       }
 
       if (isIOS) {
-        // YouTube supports a scheme, but Universal Links via https often work in Safari
-        // In in-app browsers, prefer the scheme
         const scheme = videoId
           ? `youtube://www.youtube.com/watch?v=${encodeURIComponent(videoId)}`
           : `youtube://www.youtube.com/playlist?list=${encodeURIComponent(playlistId)}`;
-        openIOSWithFallback(scheme, webUrl);
-        return false;
+        return openWithFallback(scheme, webUrl);
       }
 
       return go(webUrl);
@@ -192,7 +202,6 @@
         : `https://music.youtube.com/playlist?list=${encodeURIComponent(playlistId)}`;
 
       if (isAndroid) {
-        // Use intent with the YT Music package
         const path = videoId
           ? `watch?v=${encodeURIComponent(videoId)}`
           : `playlist?list=${encodeURIComponent(playlistId)}`;
@@ -201,13 +210,11 @@
       }
 
       if (isIOS) {
-        // Correct iOS scheme for YT Music
         const path = videoId
           ? `watch?v=${encodeURIComponent(videoId)}`
           : `playlist?list=${encodeURIComponent(playlistId)}`;
         const scheme = `youtubemusic://${path}`;
-        openIOSWithFallback(scheme, webUrl);
-        return false;
+        return openWithFallback(scheme, webUrl);
       }
 
       return go(webUrl);
@@ -224,8 +231,7 @@
 
       if (isIOS) {
         const scheme = `spotify://${type}/${encodeURIComponent(id)}`;
-        openIOSWithFallback(scheme, webUrl);
-        return false;
+        return openWithFallback(scheme, webUrl);
       }
 
       return go(webUrl);
@@ -233,20 +239,17 @@
 
     // --- Apple Music ---
     function openAppleMusic({ webUrl }) {
-      // Best cross platform is the https link. iOS Safari will open the Music app via Universal Links.
-      // In in-app browsers, try the scheme first, then fall back.
       const fallback = webUrl || 'https://music.apple.com/';
 
       if (isAndroid) {
-        // Open in Apple Music on Android if installed, else browser
         const intent = `intent://music.apple.com/#Intent;scheme=https;package=com.apple.android.music;S.browser_fallback_url=${encodeURIComponent(fallback)};end`;
         return go(intent);
       }
 
       if (isIOS) {
-        // Try scheme to force the app from in-app browsers
-        openIOSWithFallback('music://', fallback);
-        return false;
+        // Universal Links from https can work, but in many in-app browsers they do not
+        // Use scheme first, then fall back to the website
+        return openWithFallback('music://', fallback);
       }
 
       return go(fallback);
@@ -257,16 +260,13 @@
       const webUrl = `https://music.amazon.com/albums/${encodeURIComponent(id)}`;
 
       if (isAndroid) {
-        // Amazon Music package on Android
         const intent = `intent://albums/${encodeURIComponent(id)}#Intent;scheme=amazonmusic;package=com.amazon.mp3;S.browser_fallback_url=${encodeURIComponent(webUrl)};end`;
         return go(intent);
       }
 
       if (isIOS) {
-        // Try scheme, then fall back
         const scheme = `amazonmusic://albums/${encodeURIComponent(id)}`;
-        openIOSWithFallback(scheme, webUrl);
-        return false;
+        return openWithFallback(scheme, webUrl);
       }
 
       return go(webUrl);
