@@ -126,7 +126,7 @@
         r += data[i]; g += data[i+1]; b += data[i+2];
       }
       r=Math.floor(r/len); g=Math.floor(g/len); b=Math.floor(b/len);
-      const glow=`rgba(${r},${g},${b},0.9)`;
+      const glow = `rgba(${Math.min(r*1.2,255)},${Math.min(g*1.2,255)},${Math.min(b*1.2,255)},1)`;
       document.getElementById('albumCover').style.boxShadow=`0 0 80px ${glow}`;
     }
     const albumImage = document.getElementById('albumImage');
