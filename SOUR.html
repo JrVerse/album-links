@@ -30,7 +30,6 @@
       text-align: center;
     }
 
-    /* Album cover with dynamic glow */
     .cover {
       width: min(340px, 78vw);
       aspect-ratio: 1/1;
@@ -46,7 +45,6 @@
       object-fit: cover;
     }
 
-    /* Buttons */
     .btn {
       appearance: none;
       border: 0;
@@ -68,13 +66,11 @@
     }
     .btn:active { transform: translateY(1px) scale(.997); filter: brightness(.96); }
 
-    /* Button colors */
     .youtube { background: #CC0000; color: #fff; }
     .spotify { background: #1DB954; color: #fff; }
     .apple { background: #fff; color: #000; }
     .ytmusic { background: #CC0000; color: #fff; }
 
-    /* Logos */
     .btn img { height: 30px; width: auto; }
     .btn.youtube img { width: 40px; }
     .btn.amazon img { width: 42px; }
@@ -82,7 +78,6 @@
 </head>
 <body>
   <div class="wrap">
-    <!-- Album cover -->
     <div class="cover" id="albumCover">
       <img id="albumImage" src="images/Sour.jpeg" alt="Album cover">
     </div>
@@ -110,7 +105,7 @@
   </div>
 
   <script>
-    /* ========= Album glow function ========= */
+    /* ========= Album glow ========= */
     function updateAlbumGlow(imgElement) {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
@@ -127,31 +122,39 @@
       const glow=`rgba(${r},${g},${b},0.9)`;
       document.getElementById('albumCover').style.boxShadow=`0 0 80px ${glow}`;
     }
-
     const albumImage = document.getElementById('albumImage');
     albumImage.addEventListener('load', () => updateAlbumGlow(albumImage));
 
-    /* ========= Platform detection ========= */
+    /* ========= Platform and browser detection ========= */
     const UA = navigator.userAgent || '';
     const isAndroid = /Android/i.test(UA);
     const isIOS = /iPhone|iPad|iPod/i.test(UA);
+    const isChrome = /Chrome\/\d+/i.test(UA);
+    const isInApp = /\bFBAN|FBAV|Instagram|Line\/|Twitter|TikTok|Pinterest|Snapchat/i.test(UA);
 
+    /* ========= Navigation helpers with strong fallback ========= */
     function openWithFallback(appUrl, webUrl) {
+      console.log('Trying app URL:', appUrl);
       const start = Date.now();
-      if (isAndroid && appUrl.startsWith('intent://')) {
-        window.location.href = appUrl;
-        return false;
+      let wentBackground = false;
+
+      const handleVis = () => { wentBackground = document.hidden; };
+      document.addEventListener('visibilitychange', handleVis, { once: true });
+
+      // Try app first
+      window.location.href = appUrl;
+
+      // After a short delay, if we did not background, go to web
+      if (webUrl) {
+        setTimeout(() => {
+          document.removeEventListener('visibilitychange', handleVis);
+          const elapsed = Date.now() - start;
+          if (!wentBackground && elapsed < 2200) {
+            console.log('App did not open. Falling back to web:', webUrl);
+            window.location.href = webUrl;
+          }
+        }, 1200);
       }
-      if (isIOS) {
-        window.location.href = appUrl;
-        if (webUrl) {
-          setTimeout(() => {
-            if (Date.now() - start < 1800) window.location.href = webUrl;
-          }, 1200);
-        }
-        return false;
-      }
-      if (webUrl) window.location.href = webUrl;
       return false;
     }
 
@@ -167,7 +170,8 @@
         ? `https://www.youtube.com/watch?v=${encodeURIComponent(videoId)}`
         : `https://www.youtube.com/playlist?list=${encodeURIComponent(playlistId)}`;
 
-      if (isAndroid) {
+      // In in-app browsers, intents are often blocked
+      if (isAndroid && isChrome && !isInApp) {
         const path = videoId
           ? `www.youtube.com/watch?v=${encodeURIComponent(videoId)}`
           : `www.youtube.com/playlist?list=${encodeURIComponent(playlistId)}`;
@@ -175,7 +179,7 @@
           `intent://${path}` +
           `#Intent;scheme=https;package=com.google.android.youtube;` +
           `S.browser_fallback_url=${encodeURIComponent(webUrl)};end`;
-        return go(intent);
+        return openWithFallback(intent, webUrl);
       }
 
       if (isIOS) {
@@ -185,6 +189,7 @@
         return openWithFallback(scheme, webUrl);
       }
 
+      // Desktop or in-app browsers on Android
       return go(webUrl);
     }
 
@@ -193,7 +198,7 @@
         ? `https://music.youtube.com/watch?v=${encodeURIComponent(videoId)}`
         : `https://music.youtube.com/playlist?list=${encodeURIComponent(playlistId)}`;
 
-      if (isAndroid) {
+      if (isAndroid && isChrome && !isInApp) {
         const path = videoId
           ? `watch?v=${encodeURIComponent(videoId)}`
           : `playlist?list=${encodeURIComponent(playlistId)}`;
@@ -201,3 +206,61 @@
           `intent://music.youtube.com/${path}` +
           `#Intent;scheme=https;package=com.google.android.apps.youtube.music;` +
           `S.browser_fallback_url=${encodeURIComponent(webUrl)};end`;
+        return openWithFallback(intent, webUrl);
+      }
+
+      if (isIOS) {
+        const path = videoId
+          ? `watch?v=${encodeURIComponent(videoId)}`
+          : `playlist?list=${encodeURIComponent(playlistId)}`;
+        const scheme = `youtubemusic://${path}`;
+        return openWithFallback(scheme, webUrl);
+      }
+
+      return go(webUrl);
+    }
+
+    function openSpotify({ type, id }) {
+      const webUrl = `https://open.spotify.com/${type}/${encodeURIComponent(id)}`;
+
+      if (isAndroid && isChrome && !isInApp) {
+        const intent =
+          `intent://${type}/${encodeURIComponent(id)}` +
+          `#Intent;scheme=spotify;package=com.spotify.music;` +
+          `S.browser_fallback_url=${encodeURIComponent(webUrl)};end`;
+        return openWithFallback(intent, webUrl);
+      }
+
+      if (isIOS) {
+        const scheme = `spotify://${type}/${encodeURIComponent(id)}`;
+        return openWithFallback(scheme, webUrl);
+      }
+
+      return go(webUrl);
+    }
+
+    function openAppleMusic({ id }) {
+      const webUrl = `https://music.apple.com/album/${encodeURIComponent(id)}`;
+
+      // Apple Music Android app handles the https link
+      if (isAndroid && isChrome && !isInApp) {
+        const intent =
+          `intent://music.apple.com/album/${encodeURIComponent(id)}` +
+          `#Intent;scheme=https;package=com.apple.android.music;` +
+          `S.browser_fallback_url=${encodeURIComponent(webUrl)};end`;
+        return openWithFallback(intent, webUrl);
+      }
+
+      // On iOS, Universal Link will hand off to the Music app if installed
+      if (isIOS) return go(webUrl);
+
+      return go(webUrl);
+    }
+
+    /* ========= Optional: change album art ========= */
+    function changeAlbum(newSrc) {
+      albumImage.src = newSrc;
+    }
+  </script>
+</body>
+</html>
