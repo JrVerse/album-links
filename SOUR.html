@@ -89,7 +89,7 @@
 
     <!-- MUSIC APP BUTTONS -->
     <a class="btn youtube" href="#"
-       onclick="return openYouTube({ playlistId: 'OLAK5uy_mRc9HLtU_4lp_-MKQNApIRiLwY0M6xoCA&si=uC8v2Inrs-Jp0VWl' });">
+       onclick="return openYouTube({ playlistId: 'OLAK5uy_mRc9HLtU_4lp_-MKQNApIRiLwY0M6xoCA' });">
       <img src="images/youtube-logo.png" alt="YouTube"> YouTube
     </a>
 
@@ -104,7 +104,7 @@
     </a>
 
     <a class="btn ytmusic" href="#"
-       onclick="return openYouTubeMusic({ playlistId: 'OLAK5uy_kEXvla-TA6hgdjALrM04oRCD0xay4xc54&si=CcYI1G6PtplTQp3a' });">
+       onclick="return openYouTubeMusic({ playlistId: 'OLAK5uy_kEXvla-TA6hgdjALrM04oRCD0xay4xc54' });">
       <img src="images/ytmusic-logo.png" alt="YouTube Music"> YouTube Music
     </a>
   </div>
@@ -138,35 +138,53 @@
 
     function openWithFallback(appUrl, webUrl) {
       const start = Date.now();
-      if (isAndroid && appUrl.startsWith('intent://')) { window.location.href = appUrl; return false; }
+      if (isAndroid && appUrl.startsWith('intent://')) {
+        window.location.href = appUrl;
+        return false;
+      }
       if (isIOS) {
         window.location.href = appUrl;
-        if (webUrl) setTimeout(()=>{ if(Date.now()-start<1800) window.location.href=webUrl; },1200);
+        if (webUrl) {
+          setTimeout(() => {
+            if (Date.now() - start < 1800) window.location.href = webUrl;
+          }, 1200);
+        }
         return false;
       }
       if (webUrl) window.location.href = webUrl;
       return false;
     }
 
-    function go(url){ window.location.href=url; return false; }
+    function go(url){
+      console.log('Navigating to:', url);
+      window.location.href = url;
+      return false;
+    }
 
     /* ========= Per-app openers ========= */
     function openYouTube({ videoId, playlistId }) {
       const webUrl = videoId
         ? `https://www.youtube.com/watch?v=${encodeURIComponent(videoId)}`
-        : `https://youtube.com/playlist?list=${encodeURIComponent(playlistId)}`;
+        : `https://www.youtube.com/playlist?list=${encodeURIComponent(playlistId)}`;
+
       if (isAndroid) {
-        const intent = videoId
-          ? `intent://www.youtube.com/watch?v=${encodeURIComponent(videoId)}#Intent;scheme=https;package=com.google.android.youtube;S.browser_fallback_url=${encodeURIComponent(webUrl)};end`
-          : `intent://www.youtube.com/playlist?list=${encodeURIComponent(playlistId)}#Intent;scheme=https;package=com.google.android.youtube;S.browser_fallback_url=${encodeURIComponent(webUrl)};end`;
+        const path = videoId
+          ? `www.youtube.com/watch?v=${encodeURIComponent(videoId)}`
+          : `www.youtube.com/playlist?list=${encodeURIComponent(playlistId)}`;
+        const intent =
+          `intent://${path}` +
+          `#Intent;scheme=https;package=com.google.android.youtube;` +
+          `S.browser_fallback_url=${encodeURIComponent(webUrl)};end`;
         return go(intent);
       }
+
       if (isIOS) {
         const scheme = videoId
-          ? `youtube://www.youtube.com/watch?v=${encodeURIComponent(videoId)}`
-          : `youtube://www.youtube.com/playlist?list=${encodeURIComponent(playlistId)}`;
+          ? `youtube://watch?v=${encodeURIComponent(videoId)}`
+          : `youtube://playlist?list=${encodeURIComponent(playlistId)}`;
         return openWithFallback(scheme, webUrl);
       }
+
       return go(webUrl);
     }
 
@@ -174,40 +192,12 @@
       const webUrl = videoId
         ? `https://music.youtube.com/watch?v=${encodeURIComponent(videoId)}`
         : `https://music.youtube.com/playlist?list=${encodeURIComponent(playlistId)}`;
+
       if (isAndroid) {
-        const path = videoId ? `watch?v=${encodeURIComponent(videoId)}` : `playlist?list=${encodeURIComponent(playlistId)}`;
-        const intent = `intent://music.youtube.com/${path}#Intent;scheme=https;package=com.google.android.apps.youtube.music;S.browser_fallback_url=${encodeURIComponent(webUrl)};end`;
-        return go(intent);
-      }
-      if (isIOS) {
-        const path = videoId ? `watch?v=${encodeURIComponent(videoId)}` : `playlist?list=${encodeURIComponent(playlistId)}`;
-        const scheme = `youtubemusic://${path}`;
-        return openWithFallback(scheme, webUrl);
-      }
-      return go(webUrl);
-    }
-
-    function openSpotify({ type, id }) {
-      const webUrl = `https://open.spotify.com/${type}/${encodeURIComponent(id)}`;
-      if (isAndroid) {
-        const intent = `intent://${type}/${encodeURIComponent(id)}#Intent;scheme=spotify;package=com.spotify.music;S.browser_fallback_url=${encodeURIComponent(webUrl)};end`;
-        return go(intent);
-      }
-      if (isIOS) { const scheme=`spotify://${type}/${encodeURIComponent(id)}`; return openWithFallback(scheme,webUrl); }
-      return go(webUrl);
-    }
-
-    function openAppleMusic({ id }) {
-      if (isIOS) { window.location.href=`music://album/${encodeURIComponent(id)}`; return false; }
-      if (isAndroid) { const intent=`intent://music.apple.com/album/${encodeURIComponent(id)}#Intent;scheme=https;package=com.apple.android.music;end`; return go(intent); }
-      return false;
-    }
-
-    /* ========= Optional: function to change album dynamically ========= */
-    function changeAlbum(newSrc) {
-      albumImage.src = newSrc;
-      // Glow will auto-update due to load listener
-    }
-  </script>
-</body>
-</html>
+        const path = videoId
+          ? `watch?v=${encodeURIComponent(videoId)}`
+          : `playlist?list=${encodeURIComponent(playlistId)}`;
+        const intent =
+          `intent://music.youtube.com/${path}` +
+          `#Intent;scheme=https;package=com.google.android.apps.youtube.music;` +
+          `S.browser_fallback_url=${encodeURIComponent(webUrl)};end`;
