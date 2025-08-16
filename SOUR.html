@@ -83,49 +83,34 @@
 </head>
 <body>
   <div class="wrap">
-    <!-- Album cover image
-         CHANGE ME: swap the src to your album artwork file for each page -->
+    <!-- Album cover -->
     <div class="cover" id="albumCover">
       <img id="albumImage" src="images/Sour.jpeg" alt="Album cover">
     </div>
 
-    <!-- MUSIC APP BUTTONS
-         Each button calls a function below.
-         CHANGE ME: replace the IDs inside onclick with your own for each album/page. -->
-
-    <!-- YouTube playlist
-         CHANGE ME: set playlistId or use videoId inside openYouTube -->
+    <!-- MUSIC APP BUTTONS -->
     <a class="btn youtube" href="#"
        onclick="return openYouTube({ playlistId: 'OLAK5uy_mRc9HLtU_4lp_-MKQNApIRiLwY0M6xoCA&si=db_QxC0s4W_HhV6S' });">
       <img src="images/youtube-logo.png" alt="YouTube"> YouTube
     </a>
 
-    <!-- Spotify album
-         CHANGE ME: set type to 'album' | 'track' | 'playlist' and set id -->
     <a class="btn spotify" href="#"
-       onclick="return openSpotify({ type: 'album', id: '6s84u2TUpR3wdUv4NgKA2j' });">
+       onclick="return openSpotify({ type: 'album', id: 'PLACEHOLDER_SPOTIFY_ID' });">
       <img src="images/spotify-logo.png" alt="Spotify"> Spotify
     </a>
 
-    <!-- Apple Music album
-         CHANGE ME: replace id with your Apple Music album numeric ID
-         Note: iOS only - opens Music app directly. No web fallback to avoid double open. -->
     <a class="btn apple" href="#"
-       onclick="return openAppleMusic({ id: '1560735414' });">
+       onclick="return openAppleMusic({ id: 'PLACEHOLDER_APPLE_ID' });">
       <img src="images/apple-logo.png" alt="Apple Music"> Apple Music
     </a>
 
-    <!-- Amazon Music album
-         CHANGE ME: replace id with your Amazon album ID -->
     <a class="btn amazon" href="#"
-       onclick="return openAmazonMusic({ id: 'YOUR_AMAZON_ALBUM_ID' });">
+       onclick="return openAmazonMusic({ id: 'PLACEHOLDER_AMAZON_ID' });">
       <img src="images/amazon-logo.png" alt="Amazon Music"> Amazon Music
     </a>
 
-    <!-- YouTube Music playlist
-         CHANGE ME: replace playlistId or use videoId -->
     <a class="btn ytmusic" href="#"
-       onclick="return openYouTubeMusic({ playlistId: 'OLAK5uy_kEXvla-TA6hgdjALrM04oRCD0xay4xc54' });">
+       onclick="return openYouTubeMusic({ playlistId: 'PLACEHOLDER_YTMUSIC_ID' });">
       <img src="images/ytmusic-logo.png" alt="YouTube Music"> YouTube Music
     </a>
   </div>
@@ -155,140 +140,110 @@
     const isAndroid = /Android/i.test(UA);
     const isIOS = /iPhone|iPad|iPod/i.test(UA);
 
-    /* ========= Generic opener with optional fallback (no popups) =========
-       Use top-level navigation so browsers do not block it. */
     function openWithFallback(appUrl, webUrl) {
       const start = Date.now();
-
-      // Android intent with optional browser fallback
-      if (isAndroid && appUrl.startsWith('intent://')) {
-        window.location.href = appUrl;
-        return false;
-      }
-
+      if (isAndroid && appUrl.startsWith('intent://')) { window.location.href = appUrl; return false; }
       if (isIOS) {
         window.location.href = appUrl;
-        // If the app did not open quickly, go to web fallback if provided
-        if (webUrl) {
-          setTimeout(function () {
-            if (Date.now() - start < 1800) {
-              window.location.href = webUrl;
-            }
-          }, 1200);
-        }
+        if (webUrl) setTimeout(()=>{ if(Date.now()-start<1800) window.location.href=webUrl; },1200);
         return false;
       }
-
-      // Desktop or unknown
       if (webUrl) window.location.href = webUrl;
       return false;
     }
 
-    // Helper to navigate
-    function go(url) { window.location.href = url; return false; }
+    function go(url){ window.location.href=url; return false; }
 
-    /* ========= Per-app openers =========
-       Each function has a CHANGE ME comment showing where to place IDs. */
+    /* ========= Per-app openers with resettable clicks ========= */
+    const clickFlags = {
+      youtube: false,
+      ytmusic: false,
+      spotify: false,
+      apple: false,
+      amazon: false
+    };
 
-    // YouTube - pass either videoId or playlistId
-    // CHANGE ME: provide your YouTube videoId or playlistId
-    function openYouTube({ videoId, playlistId }) {
-      const webUrl = videoId
-        ? `https://www.youtube.com/watch?v=${encodeURIComponent(videoId)}`
-        : `https://www.youtube.com/playlist?list=${encodeURIComponent(playlistId)}`;
-
-      if (isAndroid) {
-        const intent = videoId
-          ? `intent://www.youtube.com/watch?v=${encodeURIComponent(videoId)}#Intent;scheme=https;package=com.google.android.youtube;S.browser_fallback_url=${encodeURIComponent(webUrl)};end`
-          : `intent://www.youtube.com/playlist?list=${encodeURIComponent(playlistId)}#Intent;scheme=https;package=com.google.android.youtube;S.browser_fallback_url=${encodeURIComponent(webUrl)};end`;
-        return go(intent);
-      }
-
-      if (isIOS) {
-        const scheme = videoId
-          ? `youtube://www.youtube.com/watch?v=${encodeURIComponent(videoId)}`
-          : `youtube://www.youtube.com/playlist?list=${encodeURIComponent(playlistId)}`;
-        return openWithFallback(scheme, webUrl);
-      }
-
-      return go(webUrl);
-    }
-
-    // YouTube Music - pass videoId or playlistId
-    // CHANGE ME: provide your YT Music videoId or playlistId
-    function openYouTubeMusic({ videoId, playlistId }) {
-      const webUrl = videoId
-        ? `https://music.youtube.com/watch?v=${encodeURIComponent(videoId)}`
-        : `https://music.youtube.com/playlist?list=${encodeURIComponent(playlistId)}`;
-
-      if (isAndroid) {
-        const path = videoId ? `watch?v=${encodeURIComponent(videoId)}` :
-                               `playlist?list=${encodeURIComponent(playlistId)}`;
-        const intent = `intent://music.youtube.com/${path}#Intent;scheme=https;package=com.google.android.apps.youtube.music;S.browser_fallback_url=${encodeURIComponent(webUrl)};end`;
-        return go(intent);
-      }
-
-      if (isIOS) {
-        const path = videoId ? `watch?v=${encodeURIComponent(videoId)}` :
-                               `playlist?list=${encodeURIComponent(playlistId)}`;
-        const scheme = `youtubemusic://${path}`;
-        return openWithFallback(scheme, webUrl);
-      }
-
-      return go(webUrl);
-    }
-
-    // Spotify - pass type and id
-    // CHANGE ME: type = 'album' | 'playlist' | 'track' and id = your Spotify ID
-    function openSpotify({ type, id }) {
-      const webUrl = `https://open.spotify.com/${type}/${encodeURIComponent(id)}`;
-
-      if (isAndroid) {
-        const intent = `intent://${type}/${encodeURIComponent(id)}#Intent;scheme=spotify;package=com.spotify.music;S.browser_fallback_url=${encodeURIComponent(webUrl)};end`;
-        return go(intent);
-      }
-
-      if (isIOS) {
-        const scheme = `spotify://${type}/${encodeURIComponent(id)}`;
-        return openWithFallback(scheme, webUrl);
-      }
-
-      return go(webUrl);
-    }
-
-    // Apple Music - pass numeric album id
-    // CHANGE ME: id = your Apple Music album numeric ID
-    // iOS: open Music app directly using scheme. No web fallback to avoid double open.
-    // Android: try Apple Music app via package intent without browser fallback.
-    function openAppleMusic({ id }) {
-      if (isIOS) {
-        window.location.href = `music://album/${encodeURIComponent(id)}`;
-        return false;
-      }
-      if (isAndroid) {
-        const intent = `intent://music.apple.com/album/${encodeURIComponent(id)}#Intent;scheme=https;package=com.apple.android.music;end`;
-        return go(intent);
+    function openOncePerClick(appKey, fn) {
+      clickFlags[appKey] = false; // reset flag for new click
+      if (!clickFlags[appKey]) {
+        clickFlags[appKey] = true;
+        return fn();
       }
       return false;
     }
 
-    // Amazon Music - pass album id
-    // CHANGE ME: id = your Amazon Music album ID
+    function openYouTube({ videoId, playlistId }) {
+      return openOncePerClick('youtube', () => {
+        const webUrl = videoId
+          ? `https://www.youtube.com/watch?v=${encodeURIComponent(videoId)}`
+          : `https://youtube.com/playlist?list=${encodeURIComponent(playlistId)}`;
+        if (isAndroid) {
+          const intent = videoId
+            ? `intent://www.youtube.com/watch?v=${encodeURIComponent(videoId)}#Intent;scheme=https;package=com.google.android.youtube;S.browser_fallback_url=${encodeURIComponent(webUrl)};end`
+            : `intent://www.youtube.com/playlist?list=${encodeURIComponent(playlistId)}#Intent;scheme=https;package=com.google.android.youtube;S.browser_fallback_url=${encodeURIComponent(webUrl)};end`;
+          return go(intent);
+        }
+        if (isIOS) {
+          const scheme = videoId
+            ? `youtube://www.youtube.com/watch?v=${encodeURIComponent(videoId)}`
+            : `youtube://www.youtube.com/playlist?list=${encodeURIComponent(playlistId)}`;
+          return openWithFallback(scheme, webUrl);
+        }
+        return go(webUrl);
+      });
+    }
+
+    function openYouTubeMusic({ videoId, playlistId }) {
+      return openOncePerClick('ytmusic', () => {
+        const webUrl = videoId
+          ? `https://music.youtube.com/watch?v=${encodeURIComponent(videoId)}`
+          : `https://music.youtube.com/playlist?list=${encodeURIComponent(playlistId)}`;
+        if (isAndroid) {
+          const path = videoId ? `watch?v=${encodeURIComponent(videoId)}` : `playlist?list=${encodeURIComponent(playlistId)}`;
+          const intent = `intent://music.youtube.com/${path}#Intent;scheme=https;package=com.google.android.apps.youtube.music;S.browser_fallback_url=${encodeURIComponent(webUrl)};end`;
+          return go(intent);
+        }
+        if (isIOS) {
+          const path = videoId ? `watch?v=${encodeURIComponent(videoId)}` : `playlist?list=${encodeURIComponent(playlistId)}`;
+          const scheme = `youtubemusic://${path}`;
+          return openWithFallback(scheme, webUrl);
+        }
+        return go(webUrl);
+      });
+    }
+
+    function openSpotify({ type, id }) {
+      return openOncePerClick('spotify', () => {
+        const webUrl = `https://open.spotify.com/${type}/${encodeURIComponent(id)}`;
+        if (isAndroid) {
+          const intent = `intent://${type}/${encodeURIComponent(id)}#Intent;scheme=spotify;package=com.spotify.music;S.browser_fallback_url=${encodeURIComponent(webUrl)};end`;
+          return go(intent);
+        }
+        if (isIOS) { const scheme=`spotify://${type}/${encodeURIComponent(id)}`; return openWithFallback(scheme,webUrl); }
+        return go(webUrl);
+      });
+    }
+
+    function openAppleMusic({ id }) {
+      return openOncePerClick('apple', () => {
+        if (isIOS) { window.location.href=`music://album/${encodeURIComponent(id)}`; return false; }
+        if (isAndroid) { const intent=`intent://music.apple.com/album/${encodeURIComponent(id)}#Intent;scheme=https;package=com.apple.android.music;end`; return go(intent); }
+        return false;
+      });
+    }
+
     function openAmazonMusic({ id }) {
-      const webUrl = `https://music.amazon.com/albums/${encodeURIComponent(id)}`;
-
-      if (isAndroid) {
-        const intent = `intent://albums/${encodeURIComponent(id)}#Intent;scheme=amazonmusic;package=com.amazon.mp3;S.browser_fallback_url=${encodeURIComponent(webUrl)};end`;
-        return go(intent);
-      }
-
-      if (isIOS) {
-        const scheme = `amazonmusic://albums/${encodeURIComponent(id)}`;
-        return openWithFallback(scheme, webUrl);
-      }
-
-      return go(webUrl);
+      return openOncePerClick('amazon', () => {
+        const webUrl=`https://music.amazon.com/albums/${encodeURIComponent(id)}`;
+        if (isAndroid) {
+          const intent=`intent://albums/${encodeURIComponent(id)}#Intent;scheme=amazonmusic;package=com.amazon.mp3;S.browser_fallback_url=${encodeURIComponent(webUrl)};end`;
+          return go(intent);
+        }
+        if (isIOS) { const scheme=`amazonmusic://albums/${encodeURIComponent(id)}`; return openWithFallback(scheme,webUrl); }
+        return go(webUrl);
+      });
     }
   </script>
 </body>
 </html>
+
