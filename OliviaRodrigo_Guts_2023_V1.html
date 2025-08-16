@@ -24,20 +24,24 @@
       justify-content: center;
     }
 
+    /* Wrap container with glow */
     .wrap {
       width: min(520px, 92vw);
       margin: 20px auto 48px;
       text-align: center;
+      transition: box-shadow 0.4s ease;
+      border-radius: 16px; /* glow rounds the edges */
     }
 
+    /* Album cover */
     .cover {
       width: min(340px, 78vw);
       aspect-ratio: 1/1;
       margin: 10px auto 22px;
       border-radius: 12px;
-      overflow: hidden;
+      overflow: hidden; /* keeps image inside */
       background: #1a1a1f;
-      transition: box-shadow 0.3s ease;
+      transition: transform 0.3s ease;
     }
     .cover img {
       width: 100%;
@@ -46,6 +50,7 @@
       display: block;
     }
 
+    /* Buttons */
     .btn {
       appearance: none;
       border: 0;
@@ -79,6 +84,7 @@
 </head>
 <body>
   <div class="wrap">
+    <!-- Album cover -->
     <div class="cover" id="albumCover">
       <img id="albumImage" src="images/guts.jpg" alt="Album cover">
     </div>
@@ -113,7 +119,6 @@
   <script>
     /* ========= Dominant color and album glow ========= */
     function getDominantColorFromImage(img, sampleStep = 4) {
-      // Draw to a small canvas for speed
       const w = img.naturalWidth || img.width;
       const h = img.naturalHeight || img.height;
       const maxSide = 220;
@@ -125,200 +130,128 @@
       canvas.height = Math.max(1, Math.floor(h * scale));
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-      // Guard for tainted canvas
       let imageData;
       try {
         imageData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
       } catch (e) {
-        // Fallback to neutral color if CORS blocks pixel access
         return { r: 100, g: 100, b: 100 };
       }
 
-      // Build a frequency map with 5-bit quantization per channel
-      const bins = new Map();
-      for (let i = 0; i < imageData.length; i += 4 * sampleStep) {
-        const a = imageData[i + 3];
-        if (a < 128) continue; // skip mostly transparent pixels
-        const r5 = imageData[i] >> 3;
-        const g5 = imageData[i + 1] >> 3;
-        const b5 = imageData[i + 2] >> 3;
-        const key = (r5 << 10) | (g5 << 5) | b5;
-        bins.set(key, (bins.get(key) || 0) + 1);
+      let r=0, g=0, b=0, count=0;
+      for (let i=0; i<imageData.length; i+=4*sampleStep){
+        const a = imageData[i+3];
+        if(a<128) continue;
+        r += imageData[i]; g += imageData[i+1]; b += imageData[i+2]; count++;
       }
-
-      if (bins.size === 0) return { r: 100, g: 100, b: 100 };
-
-      // Find the most frequent bin
-      let bestKey = 0;
-      let bestCount = -1;
-      for (const [k, count] of bins) {
-        if (count > bestCount) {
-          bestCount = count;
-          bestKey = k;
-        }
-      }
-
-      // Convert the 5-bit channels back to 8-bit by centering the bucket
-      const r5 = (bestKey >> 10) & 31;
-      const g5 = (bestKey >> 5) & 31;
-      const b5 = bestKey & 31;
-      const unquantize = v5 => (v5 << 3) | 0b100;
-      return { r: unquantize(r5), g: unquantize(g5), b: unquantize(b5) };
+      if(count===0) count=1;
+      return { r: Math.floor(r/count), g: Math.floor(g/count), b: Math.floor(b/count) };
     }
 
     function updateAlbumGlow(imgElement) {
       const { r, g, b } = getDominantColorFromImage(imgElement, 4);
-      const cover = document.getElementById('albumCover');
-      // Two layered glow for depth
-      cover.style.boxShadow =
-        `0 0 90px rgba(${r}, ${g}, ${b}, 0.9), ` +
-        `0 0 45px rgba(${r}, ${g}, ${b}, 0.6)`;
+      const wrap = document.querySelector('.wrap');
+      // Strong layered glow
+      wrap.style.boxShadow =
+        `0 0 150px rgba(${r},${g},${b},1), 0 0 80px rgba(${r},${g},${b},0.7)`;
     }
 
     const albumImage = document.getElementById('albumImage');
-    if (albumImage.complete && albumImage.naturalWidth > 0) {
+    if(albumImage.complete && albumImage.naturalWidth > 0){
       updateAlbumGlow(albumImage);
     } else {
       albumImage.addEventListener('load', () => updateAlbumGlow(albumImage), { once: true });
       albumImage.addEventListener('error', () => {
-        document.getElementById('albumCover').style.boxShadow = 'none';
+        document.querySelector('.wrap').style.boxShadow = 'none';
       }, { once: true });
     }
 
-    /* ========= Platform and browser detection ========= */
+    /* ========= Platform detection ========= */
     const UA = navigator.userAgent || '';
     const isAndroid = /Android/i.test(UA);
     const isIOS = /iPhone|iPad|iPod/i.test(UA);
     const isChrome = /Chrome\/\d+/i.test(UA);
     const isInApp = /\bFBAN|FBAV|Instagram|Line\/|Twitter|TikTok|Pinterest|Snapchat/i.test(UA);
 
-    /* ========= Navigation helpers with strong fallback ========= */
-    function openWithFallback(appUrl, webUrl) {
-      console.log('Trying app URL:', appUrl);
+    /* ========= Fallback navigation ========= */
+    function openWithFallback(appUrl, webUrl){
       const start = Date.now();
       let wentBackground = false;
-
       const handleVis = () => { wentBackground = document.hidden; };
       document.addEventListener('visibilitychange', handleVis, { once: true });
-
-      // Try app first
       window.location.href = appUrl;
-
-      // After a short delay, if we did not background, go to web
-      if (webUrl) {
-        setTimeout(() => {
+      if(webUrl){
+        setTimeout(()=>{
           document.removeEventListener('visibilitychange', handleVis);
-          const elapsed = Date.now() - start;
-          if (!wentBackground && elapsed < 2200) {
-            console.log('App did not open. Falling back to web:', webUrl);
-            window.location.href = webUrl;
-          }
-        }, 1200);
+          const elapsed = Date.now()-start;
+          if(!wentBackground && elapsed<2200) window.location.href = webUrl;
+        },1200);
       }
       return false;
     }
 
-    function go(url){
-      console.log('Navigating to:', url);
-      window.location.href = url;
-      return false;
-    }
+    function go(url){ window.location.href=url; return false; }
 
-    /* ========= Per-app openers ========= */
+    /* ========= Openers for each platform ========= */
     function openYouTube({ videoId, playlistId }) {
-      const webUrl = videoId
-        ? `https://www.youtube.com/watch?v=${encodeURIComponent(videoId)}`
-        : `https://www.youtube.com/playlist?list=${encodeURIComponent(playlistId)}`;
-
-      // In in-app browsers, intents are often blocked
-      if (isAndroid && isChrome && !isInApp) {
-        const path = videoId
-          ? `www.youtube.com/watch?v=${encodeURIComponent(videoId)}`
-          : `www.youtube.com/playlist?list=${encodeURIComponent(playlistId)}`;
-        const intent =
-          `intent://${path}` +
-          `#Intent;scheme=https;package=com.google.android.youtube;` +
-          `S.browser_fallback_url=${encodeURIComponent(webUrl)};end`;
+      const webUrl = videoId ? `https://www.youtube.com/watch?v=${encodeURIComponent(videoId)}` :
+        `https://www.youtube.com/playlist?list=${encodeURIComponent(playlistId)}`;
+      if(isAndroid && isChrome && !isInApp){
+        const path = videoId ? `www.youtube.com/watch?v=${encodeURIComponent(videoId)}` :
+          `www.youtube.com/playlist?list=${encodeURIComponent(playlistId)}`;
+        const intent = `intent://${path}#Intent;scheme=https;package=com.google.android.youtube;S.browser_fallback_url=${encodeURIComponent(webUrl)};end`;
         return openWithFallback(intent, webUrl);
       }
-
-      if (isIOS) {
-        const scheme = videoId
-          ? `youtube://watch?v=${encodeURIComponent(videoId)}`
-          : `youtube://playlist?list=${encodeURIComponent(playlistId)}`;
+      if(isIOS){
+        const scheme = videoId ? `youtube://watch?v=${encodeURIComponent(videoId)}` :
+          `youtube://playlist?list=${encodeURIComponent(playlistId)}`;
         return openWithFallback(scheme, webUrl);
       }
-
-      // Desktop or in-app browsers on Android
       return go(webUrl);
     }
 
     function openYouTubeMusic({ videoId, playlistId }) {
-      const webUrl = videoId
-        ? `https://music.youtube.com/watch?v=${encodeURIComponent(videoId)}`
-        : `https://music.youtube.com/playlist?list=${encodeURIComponent(playlistId)}`;
-
-      if (isAndroid && isChrome && !isInApp) {
-        const path = videoId
-          ? `watch?v=${encodeURIComponent(videoId)}`
-          : `playlist?list=${encodeURIComponent(playlistId)}`;
-        const intent =
-          `intent://music.youtube.com/${path}` +
-          `#Intent;scheme=https;package=com.google.android.apps.youtube.music;` +
-          `S.browser_fallback_url=${encodeURIComponent(webUrl)};end`;
+      const webUrl = videoId ? `https://music.youtube.com/watch?v=${encodeURIComponent(videoId)}` :
+        `https://music.youtube.com/playlist?list=${encodeURIComponent(playlistId)}`;
+      if(isAndroid && isChrome && !isInApp){
+        const path = videoId ? `watch?v=${encodeURIComponent(videoId)}` :
+          `playlist?list=${encodeURIComponent(playlistId)}`;
+        const intent = `intent://music.youtube.com/${path}#Intent;scheme=https;package=com.google.android.apps.youtube.music;S.browser_fallback_url=${encodeURIComponent(webUrl)};end`;
         return openWithFallback(intent, webUrl);
       }
-
-      if (isIOS) {
-        const path = videoId
-          ? `watch?v=${encodeURIComponent(videoId)}`
-          : `playlist?list=${encodeURIComponent(playlistId)}`;
+      if(isIOS){
+        const path = videoId ? `watch?v=${encodeURIComponent(videoId)}` :
+          `playlist?list=${encodeURIComponent(playlistId)}`;
         const scheme = `youtubemusic://${path}`;
         return openWithFallback(scheme, webUrl);
       }
-
       return go(webUrl);
     }
 
     function openSpotify({ type, id }) {
       const webUrl = `https://open.spotify.com/${type}/${encodeURIComponent(id)}`;
-
-      if (isAndroid && isChrome && !isInApp) {
-        const intent =
-          `intent://${type}/${encodeURIComponent(id)}` +
-          `#Intent;scheme=spotify;package=com.spotify.music;` +
-          `S.browser_fallback_url=${encodeURIComponent(webUrl)};end`;
+      if(isAndroid && isChrome && !isInApp){
+        const intent = `intent://${type}/${encodeURIComponent(id)}#Intent;scheme=spotify;package=com.spotify.music;S.browser_fallback_url=${encodeURIComponent(webUrl)};end`;
         return openWithFallback(intent, webUrl);
       }
-
-      if (isIOS) {
+      if(isIOS){
         const scheme = `spotify://${type}/${encodeURIComponent(id)}`;
         return openWithFallback(scheme, webUrl);
       }
-
       return go(webUrl);
     }
 
     function openAppleMusic({ id }) {
       const webUrl = `https://music.apple.com/album/${encodeURIComponent(id)}`;
-
-      // Apple Music Android app handles the https link
-      if (isAndroid && isChrome && !isInApp) {
-        const intent =
-          `intent://music.apple.com/album/${encodeURIComponent(id)}` +
-          `#Intent;scheme=https;package=com.apple.android.music;` +
-          `S.browser_fallback_url=${encodeURIComponent(webUrl)};end`;
+      if(isAndroid && isChrome && !isInApp){
+        const intent = `intent://music.apple.com/album/${encodeURIComponent(id)}#Intent;scheme=https;package=com.apple.android.music;S.browser_fallback_url=${encodeURIComponent(webUrl)};end`;
         return openWithFallback(intent, webUrl);
       }
-
-      // On iOS, Universal Link will hand off to the Music app if installed
-      if (isIOS) return go(webUrl);
-
+      if(isIOS) return go(webUrl);
       return go(webUrl);
     }
 
     /* ========= Optional: change album art ========= */
-    function changeAlbum(newSrc) {
+    function changeAlbum(newSrc){
       albumImage.src = newSrc;
     }
   </script>
