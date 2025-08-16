@@ -3,9 +3,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>TuneTag - Sour by Olivia Rodrigo</title>
+  <title>Album - Tap to Play</title>
 
   <style>
+    /* =========================
+       THEME AND LAYOUT STYLES
+       - You do not need to edit CSS to change links
+       - Only change images if you want a new cover
+       ========================= */
     :root {
       --bg: #0f0f12;
       --text: #f7f7fb;
@@ -80,42 +85,58 @@
 <body>
   <div class="wrap">
     <div class="cover" id="albumCover">
+      <!-- EDIT ME: change the cover art path or URL if you want a different image -->
+      <!-- If you use a remote image and want accurate glow, host it on your domain or set proper CORS headers -->
       <img id="albumImage" src="images/Sour.jpeg" alt="Album cover">
     </div>
 
-    <!-- MUSIC APP BUTTONS -->
+    <!-- =========================
+         MUSIC APP BUTTONS
+         - Each button calls a helper with IDs only
+         - Replace ONLY the values in the objects below
+         ========================= -->
 
-    <!-- Youtube -->
+    <!-- YouTube - prefers a playlistId for full albums - use videoId for a single track -->
+    <!-- EDIT ME: replace playlistId OR switch to videoId -->
     <a class="btn youtube" href="#"
-       onclick="return openYouTube({ playlistId: 'OLAK5uy_mRc9HLtU_4lp_-MKQNApIRiLwY0M6xoCA' });">
+       onclick="return openYouTube({ playlistId: 'OLAK5uy_mRc9HLtU_4lp_-MKQNApIRiLwY0M6xoCA' /* example album playlistId */ });">
       <img src="images/youtube-logo.png" alt="YouTube"> YouTube
     </a>
 
-    <!-- Spotify -->
+    <!-- Spotify - set type to 'album' for albums or 'playlist' for user playlists - id is the Spotify ID from the URL -->
+    <!-- EDIT ME: replace id - keep type as 'album' for albums -->
     <a class="btn spotify" href="#"
-       onclick="return openSpotify({ type: 'album', id: '6s84u2TUpR3wdUv4NgKA2j' });">
+       onclick="return openSpotify({ type: 'album', id: '6s84u2TUpR3wdUv4NgKA2j' /* example album id */ });">
       <img src="images/spotify-logo.png" alt="Spotify"> Spotify
     </a>
 
-    <!-- Apple Music -->
+    <!-- Apple Music - id is the numeric album ID at the end of the album URL -->
+    <!-- EDIT ME: replace id -->
     <a class="btn apple" href="#"
-       onclick="return openAppleMusic({ id: '1560735414' });">
+       onclick="return openAppleMusic({ id: '1560735414' /* example album id */ });">
       <img src="images/apple-logo.png" alt="Apple Music"> Apple Music
     </a>
 
-    <!-- Youtube Music -->
+    <!-- YouTube Music - prefers a playlistId for albums on YT Music - use videoId for single track -->
+    <!-- EDIT ME: replace playlistId OR switch to videoId -->
     <a class="btn ytmusic" href="#"
-       onclick="return openYouTubeMusic({ playlistId: 'OLAK5uy_kEXvla-TA6hgdjALrM04oRCD0xay4xc54' });">
+       onclick="return openYouTubeMusic({ playlistId: 'OLAK5uy_kEXvla-TA6hgdjALrM04oRCD0xay4xc54' /* example album playlistId */ });">
       <img src="images/ytmusic-logo.png" alt="YouTube Music"> YouTube Music
     </a>
   </div>
 
   <script>
-    /* ========= Dominant color and album glow ========= */
+    /* ==============================================
+       ALBUM GLOW FROM DOMINANT COLOR
+       - Reads pixels from the cover to create a glow
+       - Works best with same-origin images or images
+         served with CORS headers that allow reading
+       - If CORS blocks reading, it falls back gracefully
+       ============================================== */
     function getDominantColorFromImage(img, sampleStep = 4) {
       const w = img.naturalWidth || img.width;
       const h = img.naturalHeight || img.height;
-      const maxSide = 220;
+      const maxSide = 220; // downscale for speed
       const scale = Math.min(1, maxSide / Math.max(w, h));
 
       const canvas = document.createElement('canvas');
@@ -128,14 +149,15 @@
       try {
         data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
       } catch (e) {
-        // CORS-tainted canvas fallback
+        // CORS-tainted canvas fallback color
         return { r: 100, g: 100, b: 100 };
       }
 
+      // Simple histogram in 5 bits per channel to find the most common color
       const bins = new Map();
       for (let i = 0; i < data.length; i += 4 * sampleStep) {
         const a = data[i + 3];
-        if (a < 128) continue;
+        if (a < 128) continue; // skip very transparent pixels
         const r5 = data[i] >> 3;
         const g5 = data[i + 1] >> 3;
         const b5 = data[i + 2] >> 3;
@@ -168,6 +190,7 @@
         `0 0 45px rgba(${r}, ${g}, ${b}, 0.6)`;
     }
 
+    // Kick off the glow once the image is available
     const albumImage = document.getElementById('albumImage');
     if (albumImage.complete && albumImage.naturalWidth > 0) {
       updateAlbumGlow(albumImage);
@@ -178,14 +201,23 @@
       }, { once: true });
     }
 
-    /* ========= Platform and browser detection ========= */
+    /* ==============================================
+       BASIC PLATFORM CHECKS
+       - Used to choose the best deep link behavior
+       ============================================== */
     const UA = navigator.userAgent || '';
     const isAndroid = /Android/i.test(UA);
     const isIOS = /iPhone|iPad|iPod/i.test(UA);
     const isChrome = /Chrome\/\d+/i.test(UA);
     const isInApp = /\bFBAN|FBAV|Instagram|Line\/|Twitter|TikTok|Pinterest|Snapchat/i.test(UA);
 
-    /* ========= Navigation helpers with strong fallback ========= */
+    /* ==============================================
+       NAVIGATION HELPERS
+       - openWithFallback tries the app link first
+         and falls back to a web URL if the app
+         does not open within a short window
+       - go is a simple location change
+       ============================================== */
     function openWithFallback(appUrl, webUrl) {
       console.log('Trying app URL:', appUrl);
       const start = Date.now();
@@ -215,7 +247,15 @@
       return false;
     }
 
-    /* ========= Per-app openers ========= */
+    /* ==============================================
+       PER-APP OPENERS
+       - You only change the IDs passed in from the
+         button markup above, not inside these functions
+       - Reference for what to edit is right above each button
+       ============================================== */
+
+    // YouTube opener
+    // Pass { playlistId: 'PLxxxx' } for albums or { videoId: 'xxxxxxxx' } for a single track
     function openYouTube({ videoId, playlistId }) {
       const webUrl = videoId
         ? `https://www.youtube.com/watch?v=${encodeURIComponent(videoId)}`
@@ -242,6 +282,8 @@
       return go(webUrl);
     }
 
+    // YouTube Music opener
+    // Pass { playlistId: 'OLAK5u...' } for albums or { videoId: 'xxxxxxxx' } for a single track
     function openYouTubeMusic({ videoId, playlistId }) {
       const webUrl = videoId
         ? `https://music.youtube.com/watch?v=${encodeURIComponent(videoId)}`
@@ -269,6 +311,8 @@
       return go(webUrl);
     }
 
+    // Spotify opener
+    // Pass { type: 'album', id: 'xxxxxxxx' } for albums
     function openSpotify({ type, id }) {
       const webUrl = `https://open.spotify.com/${type}/${encodeURIComponent(id)}`;
 
@@ -288,6 +332,8 @@
       return go(webUrl);
     }
 
+    // Apple Music opener
+    // Pass { id: '##########' } where id is the numeric album id from the URL
     function openAppleMusic({ id }) {
       const webUrl = `https://music.apple.com/album/${encodeURIComponent(id)}`;
 
@@ -304,7 +350,11 @@
       return go(webUrl);
     }
 
-    /* ========= Optional: change album art ========= */
+    /* ==============================================
+       OPTIONAL HELPER
+       - Call changeAlbum('path-or-url.jpg') to swap art
+       - This will also update the glow via the load event
+       ============================================== */
     function changeAlbum(newSrc) {
       albumImage.src = newSrc;
     }
