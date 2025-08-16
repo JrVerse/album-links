@@ -200,14 +200,7 @@
       return go(webUrl);
     }
 
-  function openYouTubeMusic({ videoId, playlistId, albumId }) {
-    const webUrl = albumId
-      ? `https://music.youtube.com/browse/${encodeURIComponent(albumId)}`
-      : videoId
-        ? `https://music.youtube.com/watch?v=${encodeURIComponent(videoId)}`
-        : `https://music.youtube.com/playlist?list=${encodeURIComponent(playlistId)}`;
-    // ...rest stays the same
-  }
+function openYouTubeMusic({ videoId, playlistId }) { const webUrl = videoId ? https://music.youtube.com/watch?v=${encodeURIComponent(videoId)} : https://music.youtube.com/playlist?list=${encodeURIComponent(playlistId)};
 
 
       if (isAndroid && isChrome && !isInApp) {
