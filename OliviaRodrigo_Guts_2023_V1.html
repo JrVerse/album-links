@@ -46,8 +46,14 @@
       overflow: hidden;
       background: #1a1a1f;
 
-      /* Use manual glow color from :root */
-      box-shadow: 0 0 90 var(--album-glow), 0 0 200px var(--album-glow);
+      /* === ALBUM COVER GLOW ===
+         To make the glow stronger → increase the pixel values below
+         Example: 0 0 120px instead of 90px
+         First value = spread, second = blur
+      */
+      box-shadow: 
+        0 0 120px var(--album-glow),   /* outer large glow */
+        0 0 75px var(--album-glow);   /* inner softer glow */
     }
 
     .cover img {
@@ -104,7 +110,6 @@
 
     <!-- === MUSIC APP BUTTONS ===
          Change the IDs in onclick() below for each album
-         See comments above each button
     -->
 
     <!-- YouTube: replace playlistId with the new album’s playlist ID -->
