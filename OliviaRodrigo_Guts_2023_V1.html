@@ -11,6 +11,13 @@
       --text: #f7f7fb;
       --radius: 14px;
       --shadow: 0 10px 30px rgba(0,0,0,.35);
+
+      /* === MANUAL ALBUM GLOW COLOR ===
+         Change this value to any valid CSS color 
+         Example: #ff00ff  or  rgba(0,200,150,0.9)
+         To remove glow, set it to "none"
+      */
+      --album-glow: #5a9eff;
     }
 
     * { box-sizing: border-box; }
@@ -38,7 +45,9 @@
       border-radius: 12px;
       overflow: hidden;
       background: #1a1a1f;
-      transition: box-shadow 0.3s ease;
+
+      /* Use manual glow color from :root */
+      box-shadow: 0 0 90px var(--album-glow), 0 0 45px var(--album-glow);
     }
 
     .cover img {
@@ -73,6 +82,7 @@
       filter: brightness(.96); 
     }
 
+    /* Platform button colors */
     .youtube { background: #CC0000; color: #fff; }
     .spotify { background: #1DB954; color: #fff; }
     .apple { background: #fff; color: #000; }
@@ -87,105 +97,45 @@
 <body>
   <div class="wrap">
     <div class="cover" id="albumCover">
-      <img id="albumImage" src="images/shortn'sweet.jpg" alt="Album cover">
+      <!-- === CHANGE ALBUM ART HERE ===
+           Replace the src with your album cover path -->
+      <img id="albumImage" src="images/guts.jpg" alt="Album cover">
     </div>
 
-    <!-- MUSIC APP BUTTONS -->
+    <!-- === MUSIC APP BUTTONS ===
+         Change the IDs in onclick() below for each album
+         See comments above each button
+    -->
+
+    <!-- YouTube: replace playlistId with the new album’s playlist ID -->
     <a class="btn youtube" href="#" onclick="return openYouTube({ playlistId: 'OLAK5uy_mRc9HLtU_4lp_-MKQNApIRiLwY0M6xoCA' });">
       <img src="images/youtube-logo.png" alt="YouTube"> YouTube
     </a>
 
+    <!-- Spotify: replace the id with the album ID -->
     <a class="btn spotify" href="#" onclick="return openSpotify({ type: 'album', id: '6s84u2TUpR3wdUv4NgKA2j' });">
       <img src="images/spotify-logo.png" alt="Spotify"> Spotify
     </a>
 
+    <!-- Apple Music: replace the id with the album ID -->
     <a class="btn apple" href="#" onclick="return openAppleMusic({ id: '1560735414' });">
       <img src="images/apple-logo.png" alt="Apple Music"> Apple Music
     </a>
 
+    <!-- YouTube Music: replace playlistId with the new album’s playlist ID -->
     <a class="btn ytmusic" href="#" onclick="return openYouTubeMusic({ playlistId: 'OLAK5uy_kEXvla-TA6hgdjALrM04oRCD0xay4xc54' });">
       <img src="images/ytmusic-logo.png" alt="YouTube Music"> YouTube Music
     </a>
   </div>
 
   <script>
-    /* ========= Dominant color and album glow ========= */
-    function getDominantColorFromImage(img, sampleStep = 4) {
-      const w = img.naturalWidth || img.width;
-      const h = img.naturalHeight || img.height;
-      const maxSide = 220;
-      const scale = Math.min(1, maxSide / Math.max(w, h));
-
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d', { willReadFrequently: true });
-      canvas.width = Math.max(1, Math.floor(w * scale));
-      canvas.height = Math.max(1, Math.floor(h * scale));
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-      let imageData;
-      try {
-        imageData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-      } catch (e) {
-        return { r: 100, g: 100, b: 100 };
-      }
-
-      const bins = new Map();
-      for (let i = 0; i < imageData.length; i += 4 * sampleStep) {
-        const a = imageData[i + 3];
-        if (a < 128) continue;
-        const r5 = imageData[i] >> 3;
-        const g5 = imageData[i + 1] >> 3;
-        const b5 = imageData[i + 2] >> 3;
-        const key = (r5 << 10) | (g5 << 5) | b5;
-        bins.set(key, (bins.get(key) || 0) + 1);
-      }
-
-      if (bins.size === 0) return { r: 100, g: 100, b: 100 };
-
-      let bestKey = 0;
-      let bestCount = -1;
-      for (const [k, count] of bins) {
-        if (count > bestCount) {
-          bestCount = count;
-          bestKey = k;
-        }
-      }
-
-      const r5 = (bestKey >> 10) & 31;
-      const g5 = (bestKey >> 5) & 31;
-      const b5 = bestKey & 31;
-      const unquantize = v5 => (v5 << 3) | 0b100;
-      return { r: unquantize(r5), g: unquantize(g5), b: unquantize(b5) };
-    }
-
-    function updateAlbumGlow(imgElement) {
-      const { r, g, b } = getDominantColorFromImage(imgElement, 4);
-      const cover = document.getElementById('albumCover');
-
-      // Apply glow only to album cover
-      cover.style.boxShadow =
-        `0 0 90px rgba(${r}, ${g}, ${b}, 0.9), ` +
-        `0 0 45px rgba(${r}, ${g}, ${b}, 0.6)`;
-    }
-
-    const albumImage = document.getElementById('albumImage');
-    if (albumImage.complete && albumImage.naturalWidth > 0) {
-      updateAlbumGlow(albumImage);
-    } else {
-      albumImage.addEventListener('load', () => updateAlbumGlow(albumImage), { once: true });
-      albumImage.addEventListener('error', () => {
-        document.getElementById('albumCover').style.boxShadow = 'none';
-      }, { once: true });
-    }
-
-    /* ========= Platform and browser detection ========= */
+    /* ========= Platform + Fallback Navigation ========= */
     const UA = navigator.userAgent || '';
     const isAndroid = /Android/i.test(UA);
     const isIOS = /iPhone|iPad|iPod/i.test(UA);
     const isChrome = /Chrome\/\d+/i.test(UA);
     const isInApp = /\bFBAN|FBAV|Instagram|Line\/|Twitter|TikTok|Pinterest|Snapchat/i.test(UA);
 
-    /* ========= Navigation helpers with strong fallback ========= */
     function openWithFallback(appUrl, webUrl) {
       console.log('Trying app URL:', appUrl);
       const start = Date.now();
@@ -303,11 +253,7 @@
 
       return go(webUrl);
     }
-
-    /* ========= Optional: change album art ========= */
-    function changeAlbum(newSrc) {
-      albumImage.src = newSrc;
-    }
   </script>
 </body>
 </html>
+
